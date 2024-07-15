@@ -311,7 +311,7 @@ public class Model_Vehicle_Description implements GEntity {
                     setModifiedDte(poGRider.getServerDate());
                     
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sVhclIDxx = " + SQLUtil.toSQL(this.getVhclID()));
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sVhclIDxx = " + SQLUtil.toSQL(this.getVhclID()),lsExclude);
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {

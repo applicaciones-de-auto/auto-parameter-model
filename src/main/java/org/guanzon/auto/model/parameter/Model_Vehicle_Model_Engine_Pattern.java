@@ -56,7 +56,7 @@ public class Model_Vehicle_Model_Engine_Pattern implements GEntity {
             poEntity.moveToInsertRow();
 
             MiscUtil.initRowSet(poEntity);
-            poEntity.updateString("cRecdStat", RecordStatus.ACTIVE);
+            poEntity.updateInt("nEngnLenx", 0);
 
             poEntity.insertRow();
             poEntity.moveToCurrentRow();
@@ -221,8 +221,9 @@ public class Model_Vehicle_Model_Engine_Pattern implements GEntity {
 
         //replace with the primary key column info
         //setEntryNo(Integer.valueOf(MiscUtil.getNextCode(getTable(), "nEntryNox", false, poGRider.getConnection(), "")));
-        setEntryNo(MiscUtil.getNextCode(getTable(), "nEntryNox", false, poGRider.getConnection(), ""));
-
+        setEntryNo(Integer.valueOf(MiscUtil.getNextCode(getTable(), "nEntryNox", false, poGRider.getConnection(), "")));
+        //setEntryNo(MiscUtil.getNextCode(getTable(), "nEntryNox", false, null, null));
+        
         poJSON = new JSONObject();
         poJSON.put("result", "success");
         return poJSON;
@@ -268,14 +269,14 @@ public class Model_Vehicle_Model_Engine_Pattern implements GEntity {
 //        return poJSON;
     }
     
-    public JSONObject openRecord(String fsCondition, String fsEntryNo) {
+    public JSONObject openRecord(String fsValue, Integer fnEntryNo) {
         poJSON = new JSONObject();
 
         String lsSQL = getSQL();
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " a.sModelIDx = " + SQLUtil.toSQL(fsCondition)
-                                                + " AND a.nEntryNox = " + SQLUtil.toSQL(fsEntryNo));
+        lsSQL = MiscUtil.addCondition(lsSQL, " a.sModelIDx = " + SQLUtil.toSQL(fsValue)
+                                                + " AND a.nEntryNox = " + SQLUtil.toSQL(fnEntryNo));
 
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
@@ -315,7 +316,9 @@ public class Model_Vehicle_Model_Engine_Pattern implements GEntity {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setEntryNo(MiscUtil.getNextCode(getTable(), "nEntryNox", false, poGRider.getConnection(), ""));
+                setEntryNo(Integer.valueOf(MiscUtil.getNextCode(getTable(), "nEntryNox", false, poGRider.getConnection(), "")));
+                
+                //setEntryNo(MiscUtil.getNextCode(getTable(), "nEntryNox", false, null, null));
                 setEntryBy(poGRider.getUserID());
                 setEntryDte(poGRider.getServerDate());
                 setModified(poGRider.getUserID());
@@ -339,13 +342,13 @@ public class Model_Vehicle_Model_Engine_Pattern implements GEntity {
                 Model_Vehicle_Model_Engine_Pattern loOldEntity = new Model_Vehicle_Model_Engine_Pattern(poGRider);
 
                 //replace with the primary key column info
-                JSONObject loJSON = loOldEntity.openRecord(this.getEngnPtrn());
+                JSONObject loJSON = loOldEntity.openRecord(this.getModelID(),this.getEntryNo());
 
                 if ("success".equals((String) loJSON.get("result"))) {
                     setModified(poGRider.getUserID());
                     setModifiedDte(poGRider.getServerDate());
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sEngnPtrn = " + SQLUtil.toSQL(this.getEngnPtrn()), lsExclude);
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, " sModelIDx = " + SQLUtil.toSQL(this.getModelID()) + " AND nEntryNox = " + SQLUtil.toSQL(this.getEntryNo()), lsExclude);
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -485,23 +488,6 @@ public class Model_Vehicle_Model_Engine_Pattern implements GEntity {
     /**
      * Description: Sets the ID of this record.
      *
-     * @param fnValue
-     * @return result as success/failed
-     */
-    public JSONObject setEntryNo(String fnValue) {
-        return setValue("nEntryNox", fnValue);
-    }
-
-    /**
-     * @return The ID of this record.
-     */
-    public String getEntryNo() {
-        return (String) getValue("nEntryNox");
-    }
-    
-    /**
-     * Description: Sets the ID of this record.
-     *
      * @param fsValue
      * @return result as success/failed
      */
@@ -573,15 +559,15 @@ public class Model_Vehicle_Model_Engine_Pattern implements GEntity {
      * @param fnValue
      * @return result as success/failed
      */
-    public JSONObject setEntryNox(Integer fnValue) {
+    public JSONObject setEntryNo(Integer fnValue) {
         return setValue("nEntryNox", fnValue);
     }
 
     /**
      * @return The Value of this record.
      */
-    public Integer getEntryNox() {
-        return (Integer) getValue("nEntryNox");
+    public Integer getEntryNo() {
+        return Integer.parseInt(String.valueOf( getValue("nEntryNox")));
     }
     
     /**
@@ -598,7 +584,7 @@ public class Model_Vehicle_Model_Engine_Pattern implements GEntity {
      * @return The Value of this record.
      */
     public Integer getEngnLen() {
-        return (Integer) getValue("nEngnLenx");
+        return Integer.parseInt(String.valueOf( getValue("nEngnLenx")));
     }
     
     /**
