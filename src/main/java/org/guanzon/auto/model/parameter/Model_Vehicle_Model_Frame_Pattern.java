@@ -227,44 +227,9 @@ public class Model_Vehicle_Model_Frame_Pattern implements GEntity {
         return poJSON;
     }
 
-    /**
-     * Opens a record.
-     *
-     * @param fsCondition - filter values
-     * @return result as success/failed
-     */
     @Override
-    public JSONObject openRecord(String fsCondition) {
+    public JSONObject openRecord(String string) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//        poJSON = new JSONObject();
-//
-//        String lsSQL = MiscUtil.makeSelect(this);
-//
-//        //replace the condition based on the primary key column of the record
-//        lsSQL = MiscUtil.addCondition(lsSQL, " sFrmePtrn = " + SQLUtil.toSQL(fsCondition));
-//
-//        ResultSet loRS = poGRider.executeQuery(lsSQL);
-//
-//        try {
-//            if (loRS.next()) {
-//                for (int lnCtr = 1; lnCtr <= loRS.getMetaData().getColumnCount(); lnCtr++) {
-//                    setValue(lnCtr, loRS.getObject(lnCtr));
-//                }
-//
-//                pnEditMode = EditMode.UPDATE;
-//
-//                poJSON.put("result", "success");
-//                poJSON.put("message", "Record loaded successfully.");
-//            } else {
-//                poJSON.put("result", "error");
-//                poJSON.put("message", "No record to load.");
-//            }
-//        } catch (SQLException e) {
-//            poJSON.put("result", "error");
-//            poJSON.put("message", e.getMessage());
-//        }
-//
-//        return poJSON;
     }
     
      public JSONObject openRecord(String fsValue, Integer fnEntryNo) {
@@ -444,24 +409,6 @@ public class Model_Vehicle_Model_Frame_Pattern implements GEntity {
                 + " FROM vehicle_model_frame_pattern a "                     
                 + " LEFT JOIN vehicle_model b ON b.sModelIDx = a.sModelIDx " 
                 + " LEFT JOIN vehicle_make c ON c.sMakeIDxx = b.sMakeIDxx  " ;
-        
-//        return  " SELECT " +
-//                "   a.nEntryNox " +
-//                " , IFNULL(a.sFrmePtrn, '') sFrmePtrn " +
-//                " , a.nFrmeLenx " +
-//                " , a.sEntryByx " +
-//                " , a.dEntryDte " +
-//                " , IFNULL(c.sMakeIDxx, '') sMakeIDxx " +
-//                " , IFNULL(c.sMakeDesc, '') sMakeDesc " +
-//                " , IFNULL(a.sModelIDx, '') sModelIDx " +
-//                " , IFNULL(b.sModelDsc, '') sModelDsc " +
-//                " , '1' as nCodeType " +
-//                " , 'FRAME' as sCodeType " +
-//                " , a.sModified " +
-//                " , a.dModified " +
-//                " FROM vehicle_model_frame_pattern a" +
-//                " LEFT JOIN vehicle_model b ON b.sModelIDx = a.sModelIDx" +
-//                " LEFT JOIN vehicle_make c ON c.sMakeIDxx = b.sMakeIDxx" ;
     }
     
     /**

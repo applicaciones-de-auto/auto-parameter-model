@@ -284,6 +284,7 @@ public class Model_Vehicle_Color implements GEntity {
                 setEntryDte(poGRider.getServerDate());
                 setModified(poGRider.getUserID());
                 setModifiedDte(poGRider.getServerDate());
+                
                 lsSQL = makeSQL();
 
                 if (!lsSQL.isEmpty()) {

@@ -219,52 +219,16 @@ public class Model_Vehicle_Make_Frame_Pattern implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        //setFrmePtrn(MiscUtil.getNextCode(getTable(), "sFrmePtrn", true, poGRider.getConnection(), poGRider.getBranchCode()));
         setEntryNo(Integer.valueOf(MiscUtil.getNextCode(getTable(), "nEntryNox", false, poGRider.getConnection(), "")));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
         return poJSON;
     }
-
-    /**
-     * Opens a record.
-     *
-     * @param fsCondition - filter values
-     * @return result as success/failed
-     */
+    
     @Override
-    public JSONObject openRecord(String fsCondition) {
+    public JSONObject openRecord(String string) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//        poJSON = new JSONObject();
-//
-//        String lsSQL = MiscUtil.makeSelect(this);
-//
-//        //replace the condition based on the primary key column of the record
-//        lsSQL = MiscUtil.addCondition(lsSQL, " sFrmePtrn = " + SQLUtil.toSQL(fsCondition));
-//
-//        ResultSet loRS = poGRider.executeQuery(lsSQL);
-//
-//        try {
-//            if (loRS.next()) {
-//                for (int lnCtr = 1; lnCtr <= loRS.getMetaData().getColumnCount(); lnCtr++) {
-//                    setValue(lnCtr, loRS.getObject(lnCtr));
-//                }
-//
-//                pnEditMode = EditMode.UPDATE;
-//
-//                poJSON.put("result", "success");
-//                poJSON.put("message", "Record loaded successfully.");
-//            } else {
-//                poJSON.put("result", "error");
-//                poJSON.put("message", "No record to load.");
-//            }
-//        } catch (SQLException e) {
-//            poJSON.put("result", "error");
-//            poJSON.put("message", e.getMessage());
-//        }
-//
-//        return poJSON;
     }
     
     public JSONObject openRecord(String fsValue, Integer fnEntryNo) {
@@ -314,7 +278,6 @@ public class Model_Vehicle_Make_Frame_Pattern implements GEntity {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                //setFrmePtrn(MiscUtil.getNextCode(getTable(), "sFrmePtrn", true, poGRider.getConnection(), poGRider.getBranchCode()));
                 setEntryNo(Integer.valueOf(MiscUtil.getNextCode(getTable(), "nEntryNox", false, poGRider.getConnection(), "")));
 
                 setEntryBy(poGRider.getUserID());
@@ -441,22 +404,6 @@ public class Model_Vehicle_Make_Frame_Pattern implements GEntity {
                 + ", b.sMakeDesc "                                         
                 + "FROM vehicle_make_frame_pattern a "                     
                 + "LEFT JOIN vehicle_make b ON b.sMakeIDxx = a.sMakeIDxx " ;
-//        return  " SELECT " +
-//                "  a.nEntryNox " +
-//                " , IFNULL(a.sFrmePtrn, '') sFrmePtrn " +
-//                " , 0 AS nFrmeLenx " +
-//                " , a.sEntryByx " +
-//                " , a.dEntryDte " +
-//                " , IFNULL(a.sMakeIDxx, '') sMakeIDxx " +
-//                " , IFNULL(b.sMakeDesc, '') sMakeDesc " +
-//                " , '' as sModelIDx " +
-//                " , '' as sModelDsc " +
-//                " , '0' as nCodeType " +
-//                " , 'MANUFACTURING' sCodeType " +
-//                " , a.sModified " +
-//                " , a.dModified " +
-//                " FROM vehicle_make_frame_pattern a" +
-//                " LEFT JOIN vehicle_make b ON b.sMakeIDxx = a.sMakeIDxx";
     }
     
     /**
