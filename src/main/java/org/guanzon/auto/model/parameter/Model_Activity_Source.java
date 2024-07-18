@@ -220,7 +220,7 @@ public class Model_Activity_Source implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        setActTypID(MiscUtil.getNextCode(getTable(), "sActTypID", true, poGRider.getConnection(), poGRider.getBranchCode()));
+        setActTypID(MiscUtil.getNextCode(getTable(), "sActTypID", false, poGRider.getConnection(), poGRider.getBranchCode()+"ACTP"));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -279,7 +279,7 @@ public class Model_Activity_Source implements GEntity {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setActTypID(MiscUtil.getNextCode(getTable(), "sActTypID", true, poGRider.getConnection(), poGRider.getBranchCode()));
+                setActTypID(MiscUtil.getNextCode(getTable(), "sActTypID", false, poGRider.getConnection(), poGRider.getBranchCode()+"ACTP"));
 
                 lsSQL = makeSQL();
 
@@ -386,8 +386,8 @@ public class Model_Activity_Source implements GEntity {
         return MiscUtil.makeSelect(this);
     }
     
-    private String getSQL() {
-        return " SELECT"
+    public String getSQL() {
+        return " SELECT "
                 + " sActTypID "
                 + " ,sActTypDs "
                 + " ,sEventTyp "
@@ -461,7 +461,7 @@ public class Model_Activity_Source implements GEntity {
     /**
      * @return The Value of this record.
      */
-    public String gsetRecdStat() {
+    public String getRecdStat() {
         return (String) getValue("cRecdStat");
     }
     
