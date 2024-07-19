@@ -280,7 +280,11 @@ public class Model_Activity_Source implements GEntity {
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
                 setActTypID(MiscUtil.getNextCode(getTable(), "sActTypID", false, poGRider.getConnection(), poGRider.getBranchCode()+"ACTP"));
-
+                setEntryBy(poGRider.getUserID());
+                setEntryDte(poGRider.getServerDate());
+//                setModified(poGRider.getUserID());
+//                setModifiedDte(poGRider.getServerDate());
+                
                 lsSQL = makeSQL();
 
                 if (!lsSQL.isEmpty()) {
