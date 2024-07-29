@@ -397,6 +397,7 @@ public class Model_Bank_Master implements GEntity{
                 + "   sBankIDxx "
                 + " , sBankName "
                 + " , sBankCode "
+                + " , sBankType "
                 + " , cRecdStat "
                 + " , sModified "
                 + " , dModified "
@@ -452,6 +453,23 @@ public class Model_Bank_Master implements GEntity{
      */
     public String getBankCode() {
         return (String) getValue("sBankCode");
+    }
+    
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
+    public JSONObject setBankType(String fsValue) {
+        return setValue("sBankType", fsValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public String getBankType() {
+        return (String) getValue("sBankType");
     }
     
     /**

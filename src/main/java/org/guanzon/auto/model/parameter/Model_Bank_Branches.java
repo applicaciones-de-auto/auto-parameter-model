@@ -272,7 +272,7 @@ public class Model_Bank_Branches implements GEntity{
      */
     @Override
     public JSONObject saveRecord() {
-        String lsExclude = "»sBankName»sTownName»sProvName";
+        String lsExclude = "sBankName»sBankType»sTownName»sProvName";
         poJSON = new JSONObject();
 
         if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
@@ -408,7 +408,8 @@ public class Model_Bank_Branches implements GEntity{
                 + " , a.cRecdStat "                                    
                 + " , a.sModified "                                    
                 + " , a.dModified "                                    
-                + " , b.sBankName "                                    
+                + " , b.sBankName "                                      
+                + " , b.sBankType "                                  
                 + " , c.sTownName "                                    
                 + " , d.sProvName "                                    
                 + " FROM banks_branches a "                            
@@ -689,8 +690,6 @@ public class Model_Bank_Branches implements GEntity{
         return (Date) getValue("dModified");
     }
     
-    
-    
     /**
      * Description: Sets the Value of this record.
      *
@@ -706,6 +705,23 @@ public class Model_Bank_Branches implements GEntity{
      */
     public String getBankName() {
         return (String) getValue("sBankName");
+    }
+    
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
+    public JSONObject setBankType(String fsValue) {
+        return setValue("sBankType", fsValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public String getBankType() {
+        return (String) getValue("sBankType");
     }
     
     /**

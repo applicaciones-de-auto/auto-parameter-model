@@ -124,7 +124,7 @@ public class Model_Insurance_Branches implements GEntity {
 
     @Override
     public String getTable() {
-        return "insurance_company";
+        return "insurance_company_branches";
     }
 
     /**
@@ -220,7 +220,7 @@ public class Model_Insurance_Branches implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        setBrInsID(MiscUtil.getNextCode(getTable(), "sBrInsIDx", true, poGRider.getConnection(), poGRider.getBranchCode()));
+        setBrInsID(MiscUtil.getNextCode(getTable(), "sBrInsIDx", true, poGRider.getConnection(), poGRider.getBranchCode()+"IN"));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -273,15 +273,18 @@ public class Model_Insurance_Branches implements GEntity {
      */
     @Override
     public JSONObject saveRecord() {
+        String lsExclude = "sInsurNme»sTownName»sProvName";
         poJSON = new JSONObject();
 
         if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setBrInsID(MiscUtil.getNextCode(getTable(), "sBrInsIDx", true, poGRider.getConnection(), poGRider.getBranchCode()));
-
-                lsSQL = makeSQL();
+                setBrInsID(MiscUtil.getNextCode(getTable(), "sBrInsIDx", true, poGRider.getConnection(), poGRider.getBranchCode()+"IN"));
+                setModified(poGRider.getUserID());
+                setModifiedDte(poGRider.getServerDate());
+                
+                lsSQL = MiscUtil.makeSQL(this, lsExclude);
 
                 if (!lsSQL.isEmpty()) {
                     if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -302,8 +305,10 @@ public class Model_Insurance_Branches implements GEntity {
                 JSONObject loJSON = loOldEntity.openRecord(this.getBrInsID());
 
                 if ("success".equals((String) loJSON.get("result"))) {
+                    setModified(poGRider.getUserID());
+                    setModifiedDte(poGRider.getServerDate());
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sBrInsIDx = " + SQLUtil.toSQL(this.getBrInsID()), "");
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sBrInsIDx = " + SQLUtil.toSQL(this.getBrInsID()),lsExclude);
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -386,34 +391,29 @@ public class Model_Insurance_Branches implements GEntity {
         return MiscUtil.makeSelect(this, "");
     }
     
-    private String getSQL() {
-        return  " SELECT      " +                               
-                "   IFNULL(a.sBrInsIDx,'') AS sBrInsIDx " + //1 
-                " , IFNULL(a.sBrInsNme,'') AS sBrInsNme " + //2 
-                " , IFNULL(a.sBrInsCde,'') AS sBrInsCde " + //3 
-                " , IFNULL(a.sCompnyTp,'') AS sCompnyTp " + //4 
-                " , IFNULL(a.sInsurIDx,'') AS sInsurIDx " + //5 
-                " , IFNULL(a.sContactP,'') AS sContactP " + //6 
-                " , IFNULL(a.sAddressx,'') AS sAddressx " + //7 
-                " , IFNULL(a.sTownIDxx,'') AS sTownIDxx " + //8 
-                " , IFNULL(a.sZippCode,'') AS sZippCode " + //9 
-                " , IFNULL(a.sTelNoxxx,'') AS sTelNoxxx " + //10
-                " , IFNULL(a.sFaxNoxxx,'') AS sFaxNoxxx " + //11
-                " , IFNULL(a.cRecdStat,'') AS cRecdStat " + //12
-                " , IFNULL(a.sModified,'') AS sModified " + //13
-                " , a.dModified " + //14 													
-                  /* dTimeStmp */     
-                " , IFNULL(b.sInsurNme,'') AS sInsurNme " + //15
-                " , IFNULL(UPPER(d.sProvName), '') AS sProvName		 " + //16
-                " , IFNULL(UPPER(TRIM(CONCAT(c.sTownName, ', ', d.sProvName))) , '') AS sTownProv " + //17
-                " , IFNULL(UPPER(c.sTownName), '') AS sTownName		 " + //18
-                " , IFNULL(UPPER(d.sProvIDxx), '') AS sProvIDxx		 " + //19
-                " , IFNULL(b.sInsurCde,'') AS sInsurCde " + //20
-                " FROM insurance_company_branches  a              " +
-                " LEFT JOIN insurance_company b ON b.sInsurIDx = a.sInsurIDx " +
-                " LEFT JOIN TownCity c ON c.sTownIDxx = a.sTownIDxx " +
-                " LEFT JOIN Province d ON d.sProvIDxx = c.sProvIDxx ";
-
+    public String getSQL() {
+        return    " SELECT "                                                    
+                + "    a.sBrInsIDx "                                            
+                + "  , a.sBrInsNme "                                            
+                + "  , a.sBrInsCde "                                            
+                + "  , a.sCompnyTp "                                            
+                + "  , a.sInsurIDx "                                            
+                + "  , a.sContactP "                                            
+                + "  , a.sAddressx "                                            
+                + "  , a.sTownIDxx "                                            
+                + "  , a.sZippCode "                                            
+                + "  , a.sTelNoxxx "                                            
+                + "  , a.sFaxNoxxx "                                            
+                + "  , a.cRecdStat "                                            
+                + "  , a.sModified "                                            
+                + "  , a.dModified "                                            
+                + "  , b.sInsurNme "                                            
+                + "  , c.sTownName "                                            
+                + "  , d.sProvName "                                            
+                + " FROM insurance_company_branches a "                         
+                + " LEFT JOIN insurance_company b ON b.sInsurIDx = a.sInsurIDx "
+                + " LEFT JOIN towncity c ON c.sTownIDxx = a.sTownIDxx "         
+                + " LEFT JOIN province d ON d.sProvIDxx = c.sProvIDxx " ;        
     }
     
     /**
