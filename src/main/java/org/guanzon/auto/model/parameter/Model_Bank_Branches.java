@@ -236,7 +236,7 @@ public class Model_Bank_Branches implements GEntity{
     public JSONObject openRecord(String fsValue) {
         poJSON = new JSONObject();
 
-        String lsSQL = MiscUtil.makeSelect(this);
+        String lsSQL = getSQL();
 
         //replace the condition based on the primary key column of the record
         lsSQL = MiscUtil.addCondition(lsSQL, " sBrBankID = " + SQLUtil.toSQL(fsValue));
@@ -272,7 +272,7 @@ public class Model_Bank_Branches implements GEntity{
      */
     @Override
     public JSONObject saveRecord() {
-        String lsExclude = "sBankName»sBankType»sTownName»sProvName";
+        String lsExclude = "sBankName»sBankType»sTownName»sProvName»sProvIDxx";
         poJSON = new JSONObject();
 
         if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
@@ -411,7 +411,8 @@ public class Model_Bank_Branches implements GEntity{
                 + " , b.sBankName "                                      
                 + " , b.sBankType "                                  
                 + " , c.sTownName "                                    
-                + " , d.sProvName "                                    
+                + " , d.sProvName "                                   
+                + " , d.sProvIDxx "                                     
                 + " FROM banks_branches a "                            
                 + " LEFT JOIN banks b ON b.sBankIDxx = a.sBankIDxx "   
                 + " LEFT JOIN towncity c ON c.sTownIDxx = a.sTownIDxx "
@@ -756,6 +757,23 @@ public class Model_Bank_Branches implements GEntity{
      */
     public String getProvName() {
         return (String) getValue("sProvName");
+    }
+    
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
+    public JSONObject setProvID(String fsValue) {
+        return setValue("sProvIDxx", fsValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public String getProvID() {
+        return (String) getValue("sProvIDxx");
     }
     
 }

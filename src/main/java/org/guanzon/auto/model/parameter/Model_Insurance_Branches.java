@@ -230,17 +230,17 @@ public class Model_Insurance_Branches implements GEntity {
     /**
      * Opens a record.
      *
-     * @param fsCondition - filter values
+     * @param fsValue - filter values
      * @return result as success/failed
      */
     @Override
-    public JSONObject openRecord(String fsCondition) {
+    public JSONObject openRecord(String fsValue) {
         poJSON = new JSONObject();
 
-        String lsSQL = MiscUtil.makeSelect(this, "");
+        String lsSQL = getSQL();
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " sBrInsIDx = " + SQLUtil.toSQL(fsCondition));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sBrInsIDx = " + SQLUtil.toSQL(fsValue));
 
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
@@ -273,7 +273,7 @@ public class Model_Insurance_Branches implements GEntity {
      */
     @Override
     public JSONObject saveRecord() {
-        String lsExclude = "sInsurNme»sTownName»sProvName";
+        String lsExclude = "sInsurNme»sTownName»sProvName»sProvIDxx";
         poJSON = new JSONObject();
 
         if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
@@ -409,7 +409,8 @@ public class Model_Insurance_Branches implements GEntity {
                 + "  , a.dModified "                                            
                 + "  , b.sInsurNme "                                            
                 + "  , c.sTownName "                                            
-                + "  , d.sProvName "                                            
+                + "  , d.sProvName "                                           
+                + "  , d.sProvIDxx "                                            
                 + " FROM insurance_company_branches a "                         
                 + " LEFT JOIN insurance_company b ON b.sInsurIDx = a.sInsurIDx "
                 + " LEFT JOIN towncity c ON c.sTownIDxx = a.sTownIDxx "         
@@ -669,5 +670,73 @@ public class Model_Insurance_Branches implements GEntity {
      */
     public Date getModifiedDte() {
         return (Date) getValue("dModified");
+    }
+    
+    /**
+     * Sets the Value of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
+    public JSONObject setInsurNme(String fsValue) {
+        return setValue("sInsurNme", fsValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public String getInsurNme() {
+        return (String) getValue("sInsurNme");
+    }
+    
+    /**
+     * Sets the Value of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
+    public JSONObject setTownName(String fsValue) {
+        return setValue("sTownName", fsValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public String getTownName() {
+        return (String) getValue("sTownName");
+    }
+    
+    /**
+     * Sets the Value of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
+    public JSONObject setProvName(String fsValue) {
+        return setValue("sProvName", fsValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public String getProvName() {
+        return (String) getValue("sProvName");
+    }
+    
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
+    public JSONObject setProvID(String fsValue) {
+        return setValue("sProvIDxx", fsValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public String getProvID() {
+        return (String) getValue("sProvIDxx");
     }
 }
