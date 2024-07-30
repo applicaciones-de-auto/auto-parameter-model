@@ -56,7 +56,6 @@ public class Model_Vehicle_Make_Frame_Pattern implements GEntity {
             poEntity.moveToInsertRow();
 
             MiscUtil.initRowSet(poEntity);
-            poEntity.updateString("cRecdStat", RecordStatus.ACTIVE);
 
             poEntity.insertRow();
             poEntity.moveToCurrentRow();
@@ -220,27 +219,26 @@ public class Model_Vehicle_Make_Frame_Pattern implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        setFrmePtrn(MiscUtil.getNextCode(getTable(), "sFrmePtrn", true, poGRider.getConnection(), poGRider.getBranchCode()));
+        setEntryNo(Integer.valueOf(MiscUtil.getNextCode(getTable(), "nEntryNox", false, poGRider.getConnection(), "")));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
         return poJSON;
     }
-
-    /**
-     * Opens a record.
-     *
-     * @param fsCondition - filter values
-     * @return result as success/failed
-     */
+    
     @Override
-    public JSONObject openRecord(String fsCondition) {
+    public JSONObject openRecord(String string) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    public JSONObject openRecord(String fsValue, Integer fnEntryNo) {
         poJSON = new JSONObject();
 
-        String lsSQL = MiscUtil.makeSelect(this);
+        String lsSQL = getSQL();
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " sFrmePtrn = " + SQLUtil.toSQL(fsCondition));
+        lsSQL = MiscUtil.addCondition(lsSQL, " a.sMakeIDxx = " + SQLUtil.toSQL(fsValue)
+                                                + " AND a.nEntryNox = " + SQLUtil.toSQL(fnEntryNo));
 
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
@@ -273,15 +271,21 @@ public class Model_Vehicle_Make_Frame_Pattern implements GEntity {
      */
     @Override
     public JSONObject saveRecord() {
+        String lsExclude = "sMakeDesc";
         poJSON = new JSONObject();
 
         if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setFrmePtrn(MiscUtil.getNextCode(getTable(), "sFrmePtrn", true, poGRider.getConnection(), poGRider.getBranchCode()));
+                setEntryNo(Integer.valueOf(MiscUtil.getNextCode(getTable(), "nEntryNox", false, poGRider.getConnection(), "")));
 
-                lsSQL = makeSQL();
+                setEntryBy(poGRider.getUserID());
+                setEntryDte(poGRider.getServerDate());
+                setModified(poGRider.getUserID());
+                setModifiedDte(poGRider.getServerDate());
+                
+                lsSQL = MiscUtil.makeSQL(this, lsExclude);
 
                 if (!lsSQL.isEmpty()) {
                     if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -299,11 +303,13 @@ public class Model_Vehicle_Make_Frame_Pattern implements GEntity {
                 Model_Vehicle_Make_Frame_Pattern loOldEntity = new Model_Vehicle_Make_Frame_Pattern(poGRider);
 
                 //replace with the primary key column info
-                JSONObject loJSON = loOldEntity.openRecord(this.getFrmePtrn());
+                JSONObject loJSON = loOldEntity.openRecord(this.getMakeID(),this.getEntryNo());
 
                 if ("success".equals((String) loJSON.get("result"))) {
+                    setModified(poGRider.getUserID());
+                    setModifiedDte(poGRider.getServerDate());
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sFrmePtrn = " + SQLUtil.toSQL(this.getFrmePtrn()));
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity,  " sMakeIDxx = " + SQLUtil.toSQL(this.getMakeID()) + " AND nEntryNox = " + SQLUtil.toSQL(this.getEntryNo()), lsExclude);
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -386,23 +392,18 @@ public class Model_Vehicle_Make_Frame_Pattern implements GEntity {
         return MiscUtil.makeSelect(this);
     }
     
-    private String getSQL(){
-        return  " SELECT " +
-                "  a.nEntryNox " +
-                " , IFNULL(a.sFrmePtrn, '') sFrmePtrn " +
-                " , 0 AS nFrmeLenx " +
-                " , a.sEntryByx " +
-                " , a.dEntryDte " +
-                " , IFNULL(a.sMakeIDxx, '') sMakeIDxx " +
-                " , IFNULL(b.sMakeDesc, '') sMakeDesc " +
-                " , '' as sModelIDx " +
-                " , '' as sModelDsc " +
-                " , '0' as nCodeType " +
-                " , 'MANUFACTURING' sCodeType " +
-                " , a.sModified " +
-                " , a.dModified " +
-                " FROM vehicle_make_frame_pattern a" +
-                " LEFT JOIN vehicle_make b ON b.sMakeIDxx = a.sMakeIDxx";
+    public String getSQL(){
+        return    "  SELECT "                                              
+                + "  a.sMakeIDxx "                                         
+                + ", a.nEntryNox "                                         
+                + ", a.sFrmePtrn "                                         
+                + ", a.sEntryByx "                                         
+                + ", a.dEntryDte "                                         
+                + ", a.sModified "                                         
+                + ", a.dModified "                                         
+                + ", b.sMakeDesc "                                         
+                + "FROM vehicle_make_frame_pattern a "                     
+                + "LEFT JOIN vehicle_make b ON b.sMakeIDxx = a.sMakeIDxx " ;
     }
     
     /**
@@ -462,15 +463,15 @@ public class Model_Vehicle_Make_Frame_Pattern implements GEntity {
      * @param fnValue
      * @return result as success/failed
      */
-    public JSONObject setEntryNox(Integer fnValue) {
+    public JSONObject setEntryNo(Integer fnValue) {
         return setValue("nEntryNox", fnValue);
     }
 
     /**
      * @return The Value of this record.
      */
-    public Integer getEntryNox() {
-        return (Integer) getValue("nEntryNox");
+    public Integer getEntryNo() {
+        return Integer.parseInt(String.valueOf(getValue("nEntryNox")));
     }
     
     /**

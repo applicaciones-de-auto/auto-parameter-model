@@ -23,9 +23,9 @@ import org.json.simple.JSONObject;
  *
  * @author Arsiela
  */
-public class Model_Insurance_Branches implements GEntity {
+public class Model_Insurance_Master implements GEntity {
 
-    final String XML = "Model_Insurance_Branches.xml";
+    final String XML = "Model_Insurance_Master.xml";
 
     GRider poGRider;                //application driver
     CachedRowSet poEntity;          //rowset
@@ -37,7 +37,7 @@ public class Model_Insurance_Branches implements GEntity {
      *
      * @param foValue - GhostRider Application Driver
      */
-    public Model_Insurance_Branches(GRider foValue) {
+    public Model_Insurance_Master(GRider foValue) {
         if (foValue == null) {
             System.err.println("Application Driver is not set.");
             System.exit(1);
@@ -124,7 +124,7 @@ public class Model_Insurance_Branches implements GEntity {
 
     @Override
     public String getTable() {
-        return "insurance_company_branches";
+        return "insurance_company";
     }
 
     /**
@@ -220,7 +220,7 @@ public class Model_Insurance_Branches implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        setBrInsID(MiscUtil.getNextCode(getTable(), "sBrInsIDx", true, poGRider.getConnection(), poGRider.getBranchCode()+"IN"));
+        setInsurID(MiscUtil.getNextCode(getTable(), "sInsurIDx", true, poGRider.getConnection(), poGRider.getBranchCode()));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -230,17 +230,17 @@ public class Model_Insurance_Branches implements GEntity {
     /**
      * Opens a record.
      *
-     * @param fsValue - filter values
+     * @param fsCondition - filter values
      * @return result as success/failed
      */
     @Override
-    public JSONObject openRecord(String fsValue) {
+    public JSONObject openRecord(String fsCondition) {
         poJSON = new JSONObject();
 
-        String lsSQL = getSQL();
+        String lsSQL = MiscUtil.makeSelect(this);
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " sBrInsIDx = " + SQLUtil.toSQL(fsValue));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sInsurIDx = " + SQLUtil.toSQL(fsCondition));
 
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
@@ -273,18 +273,16 @@ public class Model_Insurance_Branches implements GEntity {
      */
     @Override
     public JSONObject saveRecord() {
-        String lsExclude = "sInsurNme»sTownName»sProvName»sProvIDxx";
         poJSON = new JSONObject();
 
         if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setBrInsID(MiscUtil.getNextCode(getTable(), "sBrInsIDx", true, poGRider.getConnection(), poGRider.getBranchCode()+"IN"));
+                setInsurID(MiscUtil.getNextCode(getTable(), "sInsurIDx", true, poGRider.getConnection(), poGRider.getBranchCode()));
                 setModified(poGRider.getUserID());
                 setModifiedDte(poGRider.getServerDate());
-                
-                lsSQL = MiscUtil.makeSQL(this, lsExclude);
+                lsSQL = makeSQL();
 
                 if (!lsSQL.isEmpty()) {
                     if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -299,16 +297,16 @@ public class Model_Insurance_Branches implements GEntity {
                     poJSON.put("message", "No record to save.");
                 }
             } else {
-                Model_Insurance_Branches loOldEntity = new Model_Insurance_Branches(poGRider);
+                Model_Insurance_Master loOldEntity = new Model_Insurance_Master(poGRider);
 
                 //replace with the primary key column info
-                JSONObject loJSON = loOldEntity.openRecord(this.getBrInsID());
+                JSONObject loJSON = loOldEntity.openRecord(this.getInsurID());
 
                 if ("success".equals((String) loJSON.get("result"))) {
                     setModified(poGRider.getUserID());
                     setModifiedDte(poGRider.getServerDate());
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sBrInsIDx = " + SQLUtil.toSQL(this.getBrInsID()),lsExclude);
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sInsurIDx = " + SQLUtil.toSQL(this.getInsurID()));
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -388,105 +386,22 @@ public class Model_Insurance_Branches implements GEntity {
      * @return SQL Select Statement
      */
     public String makeSelectSQL() {
-        return MiscUtil.makeSelect(this, "");
+        return MiscUtil.makeSelect(this);
     }
     
-    public String getSQL() {
-        return    " SELECT "                                                    
-                + "    a.sBrInsIDx "                                            
-                + "  , a.sBrInsNme "                                            
-                + "  , a.sBrInsCde "                                            
-                + "  , a.sCompnyTp "                                            
-                + "  , a.sInsurIDx "                                            
-                + "  , a.sContactP "                                            
-                + "  , a.sAddressx "                                            
-                + "  , a.sTownIDxx "                                            
-                + "  , a.sZippCode "                                            
-                + "  , a.sTelNoxxx "                                            
-                + "  , a.sFaxNoxxx "                                            
-                + "  , a.cRecdStat "                                            
-                + "  , a.sModified "                                            
-                + "  , a.dModified "                                            
-                + "  , b.sInsurNme "                                            
-                + "  , c.sTownName "                                            
-                + "  , d.sProvName "                                           
-                + "  , d.sProvIDxx "                                            
-                + " FROM insurance_company_branches a "                         
-                + " LEFT JOIN insurance_company b ON b.sInsurIDx = a.sInsurIDx "
-                + " LEFT JOIN towncity c ON c.sTownIDxx = a.sTownIDxx "         
-                + " LEFT JOIN province d ON d.sProvIDxx = c.sProvIDxx " ;        
+    public String getSQL(){
+        return    "  SELECT "                 
+                + "   sInsurIDx "             
+                + " , sInsurNme "             
+                + " , sInsurCde "             
+                + " , cRecdStat "             
+                + " , sModified "             
+                + " , dModified "             
+                + " FROM insurance_company " ;
     }
     
     /**
-     * Sets the ID of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setBrInsID(String fsValue) {
-        return setValue("sBrInsIDx", fsValue);
-    }
-
-    /**
-     * @return The ID of this record.
-     */
-    public String getBrInsID() {
-        return (String) getValue("sBrInsIDx");
-    }
-    
-    /**
-     * Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setBrInsNme(String fsValue) {
-        return setValue("sBrInsNme", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getBrInsNme() {
-        return (String) getValue("sBrInsNme");
-    }
-    
-    /**
-     * Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setBrInsCde(String fsValue) {
-        return setValue("sBrInsCde", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getBrInsCde() {
-        return (String) getValue("sBrInsCde");
-    }
-    
-    /**
-     * Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setCompnyTp(String fsValue) {
-        return setValue("sCompnyTp", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getCompnyTp() {
-        return (String) getValue("sCompnyTp");
-    }
-    
-    /**
-     * Sets the Value of this record.
+     * Description: Sets the ID of this record.
      *
      * @param fsValue
      * @return result as success/failed
@@ -496,121 +411,53 @@ public class Model_Insurance_Branches implements GEntity {
     }
 
     /**
-     * @return The Value of this record.
+     * @return The ID of this record.
      */
     public String getInsurID() {
         return (String) getValue("sInsurIDx");
     }
     
     /**
-     * Sets the Value of this record.
+     * Description: Sets the Value of this record.
      *
      * @param fsValue
      * @return result as success/failed
      */
-    public JSONObject setContactP(String fsValue) {
-        return setValue("sContactP", fsValue);
+    public JSONObject setInsurNme(String fsValue) {
+        return setValue("sInsurNme", fsValue);
     }
 
     /**
      * @return The Value of this record.
      */
-    public String getContactP() {
-        return (String) getValue("sContactP");
+    public String getInsurNme() {
+        return (String) getValue("sInsurNme");
     }
     
     /**
-     * Sets the Value of this record.
+     * Description: Sets the Value of this record.
      *
      * @param fsValue
      * @return result as success/failed
      */
-    public JSONObject setAddress(String fsValue) {
-        return setValue("sAddressx", fsValue);
+    public JSONObject setInsurCde(String fsValue) {
+        return setValue("sInsurCde", fsValue);
     }
 
     /**
      * @return The Value of this record.
      */
-    public String getAddress() {
-        return (String) getValue("sAddressx");
+    public String getInsurCde() {
+        return (String) getValue("sInsurCde");
     }
     
     /**
-     * Sets the Value of this record.
+     * Description: Sets the Value of this record.
      *
      * @param fsValue
      * @return result as success/failed
      */
-    public JSONObject setTownID(String fsValue) {
-        return setValue("sTownIDxx", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getTownID() {
-        return (String) getValue("sTownIDxx");
-    }
-    
-    /**
-     * Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setZippCode(String fsValue) {
-        return setValue("sZippCode", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getZippCode() {
-        return (String) getValue("sZippCode");
-    }
-    
-    /**
-     * Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setTelNo(String fsValue) {
-        return setValue("sTelNoxxx", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getTelNo() {
-        return (String) getValue("sTelNoxxx");
-    }
-    
-    /**
-     * Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setFaxNo(String fsValue) {
-        return setValue("sFaxNoxxx", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getFaxNo() {
-        return (String) getValue("sFaxNoxxx");
-    }
-    
-    /**
-     * Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setRecdStat (String fsValue) {
+    public JSONObject setRecdStat(String fsValue) {
         return setValue("cRecdStat", fsValue);
     }
 
@@ -639,12 +486,12 @@ public class Model_Insurance_Branches implements GEntity {
     }
     
     /**
-     * Sets the Value of this record.
+     * Description: Sets the Value of this record.
      *
      * @param fsValue
      * @return result as success/failed
      */
-    public JSONObject setModified (String fsValue) {
+    public JSONObject setModified(String fsValue) {
         return setValue("sModified", fsValue);
     }
 
@@ -672,71 +519,4 @@ public class Model_Insurance_Branches implements GEntity {
         return (Date) getValue("dModified");
     }
     
-    /**
-     * Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setInsurNme(String fsValue) {
-        return setValue("sInsurNme", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getInsurNme() {
-        return (String) getValue("sInsurNme");
-    }
-    
-    /**
-     * Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setTownName(String fsValue) {
-        return setValue("sTownName", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getTownName() {
-        return (String) getValue("sTownName");
-    }
-    
-    /**
-     * Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setProvName(String fsValue) {
-        return setValue("sProvName", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getProvName() {
-        return (String) getValue("sProvName");
-    }
-    
-    /**
-     * Description: Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setProvID(String fsValue) {
-        return setValue("sProvIDxx", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getProvID() {
-        return (String) getValue("sProvIDxx");
-    }
 }

@@ -230,17 +230,17 @@ public class Model_Vehicle_Description implements GEntity {
     /**
      * Opens a record.
      *
-     * @param fsCondition - filter values
+     * @param fsValue - filter values
      * @return result as success/failed
      */
     @Override
-    public JSONObject openRecord(String fsCondition) {
+    public JSONObject openRecord(String fsValue) {
         poJSON = new JSONObject();
 
         String lsSQL = getSQL(); //MiscUtil.makeSelect(this);
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " sVhclIDxx = " + SQLUtil.toSQL(fsCondition));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sVhclIDxx = " + SQLUtil.toSQL(fsValue));
 
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
@@ -311,7 +311,7 @@ public class Model_Vehicle_Description implements GEntity {
                     setModifiedDte(poGRider.getServerDate());
                     
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sVhclIDxx = " + SQLUtil.toSQL(this.getVhclID()));
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sVhclIDxx = " + SQLUtil.toSQL(this.getVhclID()),lsExclude);
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {

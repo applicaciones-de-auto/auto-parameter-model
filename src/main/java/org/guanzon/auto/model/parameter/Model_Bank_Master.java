@@ -23,21 +23,20 @@ import org.json.simple.JSONObject;
  *
  * @author Arsiela
  */
-public class Model_Insurance implements GEntity {
-
-    final String XML = "Model_Insurance.xml";
+public class Model_Bank_Master implements GEntity{
+    final String XML = "Model_Bank_Master.xml";
 
     GRider poGRider;                //application driver
     CachedRowSet poEntity;          //rowset
     JSONObject poJSON;              //json container
     int pnEditMode;                 //edit mode
-
+    
     /**
      * Entity constructor
      *
      * @param foValue - GhostRider Application Driver
      */
-    public Model_Insurance(GRider foValue) {
+    public Model_Bank_Master(GRider foValue) {
         if (foValue == null) {
             System.err.println("Application Driver is not set.");
             System.exit(1);
@@ -124,7 +123,7 @@ public class Model_Insurance implements GEntity {
 
     @Override
     public String getTable() {
-        return "insurance_company";
+        return "banks";
     }
 
     /**
@@ -220,7 +219,7 @@ public class Model_Insurance implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        setInsurID(MiscUtil.getNextCode(getTable(), "sInsurIDx", true, poGRider.getConnection(), poGRider.getBranchCode()));
+        setBankID(MiscUtil.getNextCode(getTable(), "sBankIDxx", true, poGRider.getConnection(), poGRider.getBranchCode()));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -240,7 +239,7 @@ public class Model_Insurance implements GEntity {
         String lsSQL = MiscUtil.makeSelect(this);
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " sInsurIDx = " + SQLUtil.toSQL(fsCondition));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sBankIDxx = " + SQLUtil.toSQL(fsCondition));
 
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
@@ -279,8 +278,12 @@ public class Model_Insurance implements GEntity {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setInsurID(MiscUtil.getNextCode(getTable(), "sInsurIDx", true, poGRider.getConnection(), poGRider.getBranchCode()));
-
+                setBankID(MiscUtil.getNextCode(getTable(), "sBankIDxx", true, poGRider.getConnection(), poGRider.getBranchCode()));
+//                setEntryBy(poGRider.getUserID());
+//                setEntryDte(poGRider.getServerDate());
+                setModified(poGRider.getUserID());
+                setModifiedDte(poGRider.getServerDate());
+                
                 lsSQL = makeSQL();
 
                 if (!lsSQL.isEmpty()) {
@@ -296,14 +299,17 @@ public class Model_Insurance implements GEntity {
                     poJSON.put("message", "No record to save.");
                 }
             } else {
-                Model_Insurance loOldEntity = new Model_Insurance(poGRider);
+                Model_Bank_Master loOldEntity = new Model_Bank_Master(poGRider);
 
                 //replace with the primary key column info
-                JSONObject loJSON = loOldEntity.openRecord(this.getInsurID());
+                JSONObject loJSON = loOldEntity.openRecord(this.getBankID());
 
                 if ("success".equals((String) loJSON.get("result"))) {
+                    setModified(poGRider.getUserID());
+                    setModifiedDte(poGRider.getServerDate());
+                    
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sInsurIDx = " + SQLUtil.toSQL(this.getInsurID()));
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sBankIDxx = " + SQLUtil.toSQL(this.getBankID()));
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -386,16 +392,16 @@ public class Model_Insurance implements GEntity {
         return MiscUtil.makeSelect(this);
     }
     
-    private String getSQL(){
-        return  " SELECT "  +                
-                "   IFNULL(sInsurIDx,'') AS sInsurIDx " + //1       
-                " , IFNULL(sInsurNme,'') AS sInsurNme " + //2       
-                " , IFNULL(sInsurCde,'') AS sInsurCde " + //3       
-                " , IFNULL(cRecdStat,'') AS cRecdStat " + //4       
-                " , IFNULL(sModified,'') AS sModified " + //5       
-                " , dModified " + //6       
-                /*  dTimeStmp*/             
-                " FROM insurance_company " ;
+    public String getSQL(){
+        return    "  SELECT "    
+                + "   sBankIDxx "
+                + " , sBankName "
+                + " , sBankCode "
+                + " , sBankType "
+                + " , cRecdStat "
+                + " , sModified "
+                + " , dModified "
+                + "  FROM banks ";  
     }
     
     /**
@@ -404,15 +410,15 @@ public class Model_Insurance implements GEntity {
      * @param fsValue
      * @return result as success/failed
      */
-    public JSONObject setInsurID(String fsValue) {
-        return setValue("sInsurIDx", fsValue);
+    public JSONObject setBankID(String fsValue) {
+        return setValue("sBankIDxx", fsValue);
     }
 
     /**
      * @return The ID of this record.
      */
-    public String getInsurID() {
-        return (String) getValue("sInsurIDx");
+    public String getBankID() {
+        return (String) getValue("sBankIDxx");
     }
     
     /**
@@ -421,15 +427,15 @@ public class Model_Insurance implements GEntity {
      * @param fsValue
      * @return result as success/failed
      */
-    public JSONObject setInsurNme(String fsValue) {
-        return setValue("(sInsurNme", fsValue);
+    public JSONObject setBankName(String fsValue) {
+        return setValue("sBankName", fsValue);
     }
 
     /**
      * @return The Value of this record.
      */
-    public String getInsurNme() {
-        return (String) getValue("(sInsurNme");
+    public String getBankName() {
+        return (String) getValue("sBankName");
     }
     
     /**
@@ -438,15 +444,32 @@ public class Model_Insurance implements GEntity {
      * @param fsValue
      * @return result as success/failed
      */
-    public JSONObject setInsurCde(String fsValue) {
-        return setValue("((sInsurCde", fsValue);
+    public JSONObject setBankCode(String fsValue) {
+        return setValue("sBankCode", fsValue);
     }
 
     /**
      * @return The Value of this record.
      */
-    public String getInsurCde() {
-        return (String) getValue("((sInsurCde");
+    public String getBankCode() {
+        return (String) getValue("sBankCode");
+    }
+    
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
+    public JSONObject setBankType(String fsValue) {
+        return setValue("sBankType", fsValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public String getBankType() {
+        return (String) getValue("sBankType");
     }
     
     /**
@@ -456,14 +479,14 @@ public class Model_Insurance implements GEntity {
      * @return result as success/failed
      */
     public JSONObject setRecdStat(String fsValue) {
-        return setValue("((cRecdStat", fsValue);
+        return setValue("cRecdStat", fsValue);
     }
 
     /**
      * @return The Value of this record.
      */
-    public String gsetRecdStat() {
-        return (String) getValue("((cRecdStat");
+    public String getRecdStat() {
+        return (String) getValue("cRecdStat");
     }
     
     /**
@@ -483,6 +506,40 @@ public class Model_Insurance implements GEntity {
         return ((String) getValue("cRecdStat")).equals("1");
     }
     
+//    /**
+//     * Description: Sets the Value of this record.
+//     *
+//     * @param fsValue
+//     * @return result as success/failed
+//     */
+//    public JSONObject setEntryBy(String fsValue) {
+//        return setValue("sEntryByx", fsValue);
+//    }
+//
+//    /**
+//     * @return The Value of this record.
+//     */
+//    public String getEntryBy() {
+//        return (String) getValue("sEntryByx");
+//    }
+//    
+//    /**
+//     * Sets the date and time the record was modified.
+//     *
+//     * @param fdValue
+//     * @return result as success/failed
+//     */
+//    public JSONObject setEntryDte(Date fdValue) {
+//        return setValue("dEntryDte", fdValue);
+//    }
+//
+//    /**
+//     * @return The date and time the record was modified.
+//     */
+//    public Date getEntryDte() {
+//        return (Date) getValue("dEntryDte");
+//    }
+    
     /**
      * Description: Sets the Value of this record.
      *
@@ -490,14 +547,14 @@ public class Model_Insurance implements GEntity {
      * @return result as success/failed
      */
     public JSONObject setModified(String fsValue) {
-        return setValue("((sModified", fsValue);
+        return setValue("sModified", fsValue);
     }
 
     /**
      * @return The Value of this record.
      */
     public String getModified() {
-        return (String) getValue("((sModified");
+        return (String) getValue("sModified");
     }
     
     /**
@@ -516,5 +573,4 @@ public class Model_Insurance implements GEntity {
     public Date getModifiedDte() {
         return (Date) getValue("dModified");
     }
-    
 }

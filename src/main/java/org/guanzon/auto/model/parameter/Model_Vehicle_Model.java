@@ -304,7 +304,7 @@ public class Model_Vehicle_Model implements GEntity {
                 Model_Vehicle_Model loOldEntity = new Model_Vehicle_Model (poGRider);
 
                 //replace with the primary key column info
-                JSONObject loJSON = loOldEntity.openRecord(this.getMakeID());
+                JSONObject loJSON = loOldEntity.openRecord(this.getModelID());
 
                 if ("success".equals((String) loJSON.get("result"))) {
                     setModified(poGRider.getUserID());
