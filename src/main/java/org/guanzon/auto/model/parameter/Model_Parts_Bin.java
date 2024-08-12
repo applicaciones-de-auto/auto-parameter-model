@@ -220,7 +220,7 @@ public class Model_Parts_Bin implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        setBinID(MiscUtil.getNextCode(getTable(), "sBinIDxxx", true, poGRider.getConnection(), poGRider.getBranchCode()));
+        setBinID(MiscUtil.getNextCode(getTable(), "sBinIDxxx", false, poGRider.getConnection(), poGRider.getBranchCode()));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -230,17 +230,17 @@ public class Model_Parts_Bin implements GEntity {
     /**
      * Opens a record.
      *
-     * @param fsCondition - filter values
+     * @param fsValue - filter values
      * @return result as success/failed
      */
     @Override
-    public JSONObject openRecord(String fsCondition) {
+    public JSONObject openRecord(String fsValue) {
         poJSON = new JSONObject();
 
         String lsSQL = MiscUtil.makeSelect(this);
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " sBinIDxxx = " + SQLUtil.toSQL(fsCondition));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sBinIDxxx = " + SQLUtil.toSQL(fsValue));
 
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
@@ -279,8 +279,9 @@ public class Model_Parts_Bin implements GEntity {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setBinID(MiscUtil.getNextCode(getTable(), "sBinIDxxx", true, poGRider.getConnection(), poGRider.getBranchCode()));
-
+                setBinID(MiscUtil.getNextCode(getTable(), "sBinIDxxx", false, poGRider.getConnection(), poGRider.getBranchCode()));
+                setModified(poGRider.getUserID());
+                setModifiedDte(poGRider.getServerDate());
                 lsSQL = makeSQL();
 
                 if (!lsSQL.isEmpty()) {
@@ -302,6 +303,8 @@ public class Model_Parts_Bin implements GEntity {
                 JSONObject loJSON = loOldEntity.openRecord(this.getBinID());
 
                 if ("success".equals((String) loJSON.get("result"))) {
+                    setModified(poGRider.getUserID());
+                    setModifiedDte(poGRider.getServerDate());
                     //replace the condition based on the primary key column of the record
                     lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sBinIDxxx = " + SQLUtil.toSQL(this.getBinID()));
 
@@ -386,14 +389,14 @@ public class Model_Parts_Bin implements GEntity {
         return MiscUtil.makeSelect(this);
     }
     
-    private String getSQL(){
-        return "SELECT" + 
-                    " sBinIDxxx" + //1
-                    ", IFNULL(sBinNamex,'') sBinNamex" + //2
-                    ", cRecdStat" + //3
-                    ", sModified" + //4
-                    ", dModified" + //5
-                " FROM bin ";
+    public String getSQL(){
+        return    " SELECT "       
+                + "    sBinIDxxx " 
+                + "  , sBinNamex " 
+                + "  , cRecdStat " 
+                + "  , sModified " 
+                + "  , dModified " 
+                + " FROM bin "     ;
     }
     
     /**
@@ -443,7 +446,7 @@ public class Model_Parts_Bin implements GEntity {
     /**
      * @return The Value of this record.
      */
-    public String gsetRecdStat() {
+    public String getRecdStat() {
         return (String) getValue("cRecdStat");
     }
     
