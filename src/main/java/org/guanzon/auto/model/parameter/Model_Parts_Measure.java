@@ -21,7 +21,7 @@ import org.json.simple.JSONObject;
 
 /**
  *
- * @author MIS-PC
+ * @author Arsiela
  */
 public class Model_Parts_Measure implements GEntity {
 
@@ -220,7 +220,7 @@ public class Model_Parts_Measure implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        setMeasurID(MiscUtil.getNextCode(getTable(), "sMeasurNm", true, poGRider.getConnection(), poGRider.getBranchCode()));
+        setMeasurID(MiscUtil.getNextCode(getTable(), "sMeasurID", false, poGRider.getConnection(), poGRider.getBranchCode()));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -230,17 +230,17 @@ public class Model_Parts_Measure implements GEntity {
     /**
      * Opens a record.
      *
-     * @param fsCondition - filter values
+     * @param fsValue - filter values
      * @return result as success/failed
      */
     @Override
-    public JSONObject openRecord(String fsCondition) {
+    public JSONObject openRecord(String fsValue) {
         poJSON = new JSONObject();
 
         String lsSQL = MiscUtil.makeSelect(this);
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " sMeasurNm = " + SQLUtil.toSQL(fsCondition));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sMeasurID = " + SQLUtil.toSQL(fsValue));
 
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
@@ -279,8 +279,9 @@ public class Model_Parts_Measure implements GEntity {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setMeasurID(MiscUtil.getNextCode(getTable(), "sMeasurNm", true, poGRider.getConnection(), poGRider.getBranchCode()));
-
+                setMeasurID(MiscUtil.getNextCode(getTable(), "sMeasurID", false, poGRider.getConnection(), poGRider.getBranchCode()));
+                setModified(poGRider.getUserID());
+                setModifiedDte(poGRider.getServerDate());
                 lsSQL = makeSQL();
 
                 if (!lsSQL.isEmpty()) {
@@ -302,8 +303,10 @@ public class Model_Parts_Measure implements GEntity {
                 JSONObject loJSON = loOldEntity.openRecord(this.getMeasurID());
 
                 if ("success".equals((String) loJSON.get("result"))) {
+                    setModified(poGRider.getUserID());
+                    setModifiedDte(poGRider.getServerDate());
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sMeasurNm = " + SQLUtil.toSQL(this.getMeasurID()));
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sMeasurID = " + SQLUtil.toSQL(this.getMeasurID()));
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -386,15 +389,15 @@ public class Model_Parts_Measure implements GEntity {
         return MiscUtil.makeSelect(this);
     }
     
-    private String getSQL(){
-        return "SELECT" + 
-                    " sMeasurID" + //1
-                    ", IFNULL(sMeasurNm,'') sMeasurNm" + //2
-                    ", IFNULL(sShortDsc,'') sShortDsc" + //3
-                    ", cRecdStat" + //4
-                    ", sModified" + //5
-                    ", dModified" + //6
-                " FROM measure ";
+    public String getSQL(){
+        return    " SELECT "       
+                + "    sMeasurID " 
+                + "  , sMeasurNm " 
+                + "  , sShortDsc " 
+                + "  , cRecdStat " 
+                + "  , sModified " 
+                + "  , dModified " 
+                + " FROM measure "     ;
     }
     
     /**
@@ -415,7 +418,7 @@ public class Model_Parts_Measure implements GEntity {
     }
     
     /**
-     * Description: Sets the ID of this record.
+     * Description: Sets the Value of this record.
      *
      * @param fsValue
      * @return result as success/failed
@@ -425,10 +428,27 @@ public class Model_Parts_Measure implements GEntity {
     }
 
     /**
-     * @return The ID of this record.
+     * @return The Value of this record.
      */
     public String getMeasurNm() {
         return (String) getValue("sMeasurNm");
+    }
+    
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
+    public JSONObject setShortDsc(String fsValue) {
+        return setValue("sShortDsc", fsValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public String getShortDsc() {
+        return (String) getValue("sShortDsc");
     }
     
     /**
@@ -444,7 +464,7 @@ public class Model_Parts_Measure implements GEntity {
     /**
      * @return The Value of this record.
      */
-    public String gsetRecdStat() {
+    public String getRecdStat() {
         return (String) getValue("cRecdStat");
     }
     

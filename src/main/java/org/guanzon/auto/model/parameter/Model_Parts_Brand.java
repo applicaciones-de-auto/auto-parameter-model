@@ -220,7 +220,7 @@ public class Model_Parts_Brand implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        setBrandCde(MiscUtil.getNextCode(getTable(), "sBrandCde", true, poGRider.getConnection(), poGRider.getBranchCode()));
+        setBrandCde(MiscUtil.getNextCode(getTable(), "sBrandCde", false, poGRider.getConnection(), poGRider.getBranchCode()));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -230,17 +230,17 @@ public class Model_Parts_Brand implements GEntity {
     /**
      * Opens a record.
      *
-     * @param fsCondition - filter values
+     * @param fsValue - filter values
      * @return result as success/failed
      */
     @Override
-    public JSONObject openRecord(String fsCondition) {
+    public JSONObject openRecord(String fsValue) {
         poJSON = new JSONObject();
 
-        String lsSQL = MiscUtil.makeSelect(this);
+        String lsSQL = getSQL();
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " sBrandCde = " + SQLUtil.toSQL(fsCondition));
+        lsSQL = MiscUtil.addCondition(lsSQL, " a.sBrandCde = " + SQLUtil.toSQL(fsValue));
 
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
@@ -277,11 +277,14 @@ public class Model_Parts_Brand implements GEntity {
 
         if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
             String lsSQL;
+            String lsExclude = "sInvTypDs";
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setBrandCde(MiscUtil.getNextCode(getTable(), "sBrandCde", true, poGRider.getConnection(), poGRider.getBranchCode()));
-
-                lsSQL = makeSQL();
+                setBrandCde(MiscUtil.getNextCode(getTable(), "sBrandCde", false, poGRider.getConnection(), poGRider.getBranchCode()));
+                setModified(poGRider.getUserID());
+                setModifiedDte(poGRider.getServerDate());
+                
+                lsSQL = MiscUtil.makeSQL(this, lsExclude);
 
                 if (!lsSQL.isEmpty()) {
                     if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -302,8 +305,10 @@ public class Model_Parts_Brand implements GEntity {
                 JSONObject loJSON = loOldEntity.openRecord(this.getBrandCde());
 
                 if ("success".equals((String) loJSON.get("result"))) {
+                    setModified(poGRider.getUserID());
+                    setModifiedDte(poGRider.getServerDate());
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sBrandCde = " + SQLUtil.toSQL(this.getBrandCde()));
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sBrandCde = " + SQLUtil.toSQL(this.getBrandCde()),lsExclude);
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -386,14 +391,17 @@ public class Model_Parts_Brand implements GEntity {
         return MiscUtil.makeSelect(this);
     }
     
-    private String getSQL(){
-        return "SELECT" + 
-                    " sBrandCde" + //1
-                    ", IFNULL(sDescript,'') sDescript" + //2
-                    ", cRecdStat" + //3
-                    ", sModified" + //4
-                    ", dModified" + //5
-                " FROM brand ";
+    public String getSQL(){
+        return    " SELECT "       
+                + "    a.sBrandCde " 
+                + "  , a.sInvTypCd " 
+                + "  , a.sDescript " 
+                + "  , a.cRecdStat " 
+                + "  , a.sModified " 
+                + "  , a.dModified " 
+                + "  , b.sDescript AS sInvTypDs " 
+                + " FROM brand a "                      
+                + " LEFT JOIN inv_type b ON b.sInvTypCd = a.sInvTypCd "    ;
     }
     
     /**
@@ -411,6 +419,23 @@ public class Model_Parts_Brand implements GEntity {
      */
     public String getBrandCde() {
         return (String) getValue("sBrandCde");
+    }
+    
+    /**
+     * Description: Sets the ID of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
+    public JSONObject setInvTypCd(String fsValue) {
+        return setValue("sInvTypCd", fsValue);
+    }
+
+    /**
+     * @return The ID of this record.
+     */
+    public String getInvTypCd() {
+        return (String) getValue("sInvTypCd");
     }
     
     /**
@@ -443,7 +468,7 @@ public class Model_Parts_Brand implements GEntity {
     /**
      * @return The Value of this record.
      */
-    public String gsetRecdStat() {
+    public String getRecdStat() {
         return (String) getValue("cRecdStat");
     }
     
@@ -498,5 +523,21 @@ public class Model_Parts_Brand implements GEntity {
         return (Date) getValue("dModified");
     }
     
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
+    public JSONObject setInvTypDs(String fsValue) {
+        return setValue("sInvTypDs", fsValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public String getInvTypDs() {
+        return (String) getValue("sInvTypDs");
+    }
     
 }
