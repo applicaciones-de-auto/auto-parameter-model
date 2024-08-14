@@ -220,7 +220,7 @@ public class Model_Parts_Item_Location implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        setLocatnID(MiscUtil.getNextCode(getTable(), "sLocatnDs", true, poGRider.getConnection(), poGRider.getBranchCode()));
+        setLocatnID(MiscUtil.getNextCode(getTable(), "sLocatnID", false, poGRider.getConnection(), poGRider.getBranchCode()));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -230,17 +230,17 @@ public class Model_Parts_Item_Location implements GEntity {
     /**
      * Opens a record.
      *
-     * @param fsCondition - filter values
+     * @param fsValue - filter values
      * @return result as success/failed
      */
     @Override
-    public JSONObject openRecord(String fsCondition) {
+    public JSONObject openRecord(String fsValue) {
         poJSON = new JSONObject();
 
-        String lsSQL = MiscUtil.makeSelect(this);
+        String lsSQL = getSQL();
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " sLocatnDs = " + SQLUtil.toSQL(fsCondition));
+        lsSQL = MiscUtil.addCondition(lsSQL, " a.sLocatnID = " + SQLUtil.toSQL(fsValue));
 
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
@@ -277,11 +277,15 @@ public class Model_Parts_Item_Location implements GEntity {
 
         if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
             String lsSQL;
+            String lsExclude = "sWHouseNm»sSectnNme»sBinNamex";
+            
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setLocatnID(MiscUtil.getNextCode(getTable(), "sLocatnDs", true, poGRider.getConnection(), poGRider.getBranchCode()));
-
-                lsSQL = makeSQL();
+                setLocatnID(MiscUtil.getNextCode(getTable(), "sLocatnID", false, poGRider.getConnection(), poGRider.getBranchCode()));
+                setModified(poGRider.getUserID());
+                setModifiedDte(poGRider.getServerDate());
+                
+                lsSQL = MiscUtil.makeSQL(this, lsExclude);
 
                 if (!lsSQL.isEmpty()) {
                     if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -302,8 +306,10 @@ public class Model_Parts_Item_Location implements GEntity {
                 JSONObject loJSON = loOldEntity.openRecord(this.getLocatnID());
 
                 if ("success".equals((String) loJSON.get("result"))) {
+                    setModified(poGRider.getUserID());
+                    setModifiedDte(poGRider.getServerDate());
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sLocatnDs = " + SQLUtil.toSQL(this.getLocatnID()));
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sLocatnID = " + SQLUtil.toSQL(this.getLocatnID()),lsExclude);
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -386,23 +392,23 @@ public class Model_Parts_Item_Location implements GEntity {
         return MiscUtil.makeSelect(this);
     }
     
-    private String getSQL(){
-        return "SELECT" + 
-                    " a.sLocatnID" + //1
-                    ", IFNULL(a.sLocatnDs,'') sLocatnDs" + //2
-                    ", a.cRecdStat" + //3
-                    ", a.sModified" + //4
-                    ", a.dModified" + //5
-                    ", IFNULL(a.sWHouseID,'') sWHouseID" + //6
-                    ", IFNULL(b.sWHouseNm,'') sWHouseNm" + //7
-                    ", IFNULL(a.sSectnIDx,'') sSectnIDx" + //8
-                    ", IFNULL(c.sSectnNme,'') sSectnNme" + //9
-                    ", IFNULL(a.sBinIDxxx,'') sBinIDxxx" + //10
-                    ", IFNULL(d.sBinNamex,'') sBinNamex" + //11
-                " FROM item_location a" +
-                " LEFT JOIN warehouse b ON b.sWHouseID = a.sWHouseID " +
-                " LEFT JOIN section c ON c.sSectnIDx = a.sSectnIDx " +
-                " LEFT JOIN bin d ON d.sBinIDxxx = a.sBinIDxxx ";
+    public String getSQL(){
+        return    " SELECT "                                             
+                + "    a.sLocatnID "                                     
+                + "  , a.sLocatnDs "                                     
+                + "  , a.sWHouseID "                                     
+                + "  , a.sSectnIDx "                                     
+                + "  , a.sBinIDxxx "                                     
+                + "  , a.cRecdStat "                                     
+                + "  , a.sModified "                                     
+                + "  , a.dModified "                                     
+                + "  , b.sWHouseNm "                                     
+                + "  , c.sSectnNme "                                     
+                + "  , d.sBinNamex "                                     
+                + " FROM item_location a  "                              
+                + " LEFT JOIN warehouse b ON b.sWHouseID = a.sWHouseID " 
+                + " LEFT JOIN section c ON c.sSectnIDx = a.sSectnIDx "   
+                + " LEFT JOIN bin d ON d.sBinIDxxx = a.sBinIDxxx "           ;
     }
     
     /**
@@ -423,7 +429,7 @@ public class Model_Parts_Item_Location implements GEntity {
     }
     
     /**
-     * Description: Sets the ID of this record.
+     * Description: Sets the Value of this record.
      *
      * @param fsValue
      * @return result as success/failed
@@ -437,6 +443,23 @@ public class Model_Parts_Item_Location implements GEntity {
      */
     public String getLocatnDs() {
         return (String) getValue("sLocatnDs");
+    }
+    
+    /**
+     * Description: Sets the ID of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
+    public JSONObject setWHouseID(String fsValue) {
+        return setValue("sWHouseID", fsValue);
+    }
+
+    /**
+     * @return The ID of this record.
+     */
+    public String getWHouseID() {
+        return (String) getValue("sWHouseID");
     }
     
     /**
@@ -486,7 +509,7 @@ public class Model_Parts_Item_Location implements GEntity {
     /**
      * @return The Value of this record.
      */
-    public String gsetRecdStat() {
+    public String getRecdStat() {
         return (String) getValue("cRecdStat");
     }
     
@@ -541,8 +564,8 @@ public class Model_Parts_Item_Location implements GEntity {
         return (Date) getValue("dModified");
     }
     
-     /**
-     * Description: Sets the ID of this record.
+    /**
+     * Description: Sets the Value of this record.
      *
      * @param fsValue
      * @return result as success/failed
@@ -552,14 +575,14 @@ public class Model_Parts_Item_Location implements GEntity {
     }
 
     /**
-     * @return The ID of this record.
+     * @return The Value of this record.
      */
     public String getWHouseNm() {
         return (String) getValue("sWHouseNm");
     }
     
-     /**
-     * Description: Sets the ID of this record.
+    /**
+     * Description: Sets the Value of this record.
      *
      * @param fsValue
      * @return result as success/failed
@@ -569,14 +592,14 @@ public class Model_Parts_Item_Location implements GEntity {
     }
 
     /**
-     * @return The ID of this record.
+     * @return The Value of this record.
      */
     public String getSectnNme() {
         return (String) getValue("sSectnNme");
     }
     
-     /**
-     * Description: Sets the ID of this record.
+    /**
+     * Description: Sets the Value of this record.
      *
      * @param fsValue
      * @return result as success/failed
@@ -586,11 +609,10 @@ public class Model_Parts_Item_Location implements GEntity {
     }
 
     /**
-     * @return The ID of this record.
+     * @return The Value of this record.
      */
     public String getBinName() {
         return (String) getValue("sBinNamex");
     }
-    
     
 }

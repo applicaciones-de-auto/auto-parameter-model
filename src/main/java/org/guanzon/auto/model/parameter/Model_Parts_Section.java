@@ -220,7 +220,7 @@ public class Model_Parts_Section implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        setMeasurID(MiscUtil.getNextCode(getTable(), "sMeasurID", false, poGRider.getConnection(), poGRider.getBranchCode()));
+        setSectnID(MiscUtil.getNextCode(getTable(), "sSectnIDx", false, poGRider.getConnection(), poGRider.getBranchCode()));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -240,7 +240,7 @@ public class Model_Parts_Section implements GEntity {
         String lsSQL = MiscUtil.makeSelect(this);
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " sMeasurID = " + SQLUtil.toSQL(fsValue));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sSectnIDx = " + SQLUtil.toSQL(fsValue));
 
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
@@ -279,7 +279,7 @@ public class Model_Parts_Section implements GEntity {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setMeasurID(MiscUtil.getNextCode(getTable(), "sMeasurID", false, poGRider.getConnection(), poGRider.getBranchCode()));
+                setSectnID(MiscUtil.getNextCode(getTable(), "sSectnIDx", false, poGRider.getConnection(), poGRider.getBranchCode()));
                 setModified(poGRider.getUserID());
                 setModifiedDte(poGRider.getServerDate());
                 lsSQL = makeSQL();
@@ -300,13 +300,13 @@ public class Model_Parts_Section implements GEntity {
                 Model_Parts_Section loOldEntity = new Model_Parts_Section(poGRider);
 
                 //replace with the primary key column info
-                JSONObject loJSON = loOldEntity.openRecord(this.getMeasurID());
+                JSONObject loJSON = loOldEntity.openRecord(this.getSectnID());
 
                 if ("success".equals((String) loJSON.get("result"))) {
                     setModified(poGRider.getUserID());
                     setModifiedDte(poGRider.getServerDate());
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sMeasurID = " + SQLUtil.toSQL(this.getMeasurID()));
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sSectnIDx = " + SQLUtil.toSQL(this.getSectnID()));
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -391,13 +391,12 @@ public class Model_Parts_Section implements GEntity {
     
     public String getSQL(){
         return    " SELECT "       
-                + "    sMeasurID " 
-                + "  , sMeasurNm " 
-                + "  , sShortDsc " 
+                + "    sSectnIDx " 
+                + "  , sSectnNme " 
                 + "  , cRecdStat " 
                 + "  , sModified " 
                 + "  , dModified " 
-                + " FROM measure "     ;
+                + " FROM section "     ;
     }
     
     /**
@@ -406,15 +405,15 @@ public class Model_Parts_Section implements GEntity {
      * @param fsValue
      * @return result as success/failed
      */
-    public JSONObject setMeasurID(String fsValue) {
-        return setValue("sMeasurID", fsValue);
+    public JSONObject setSectnID(String fsValue) {
+        return setValue("sSectnIDx", fsValue);
     }
 
     /**
      * @return The ID of this record.
      */
-    public String getMeasurID() {
-        return (String) getValue("sMeasurID");
+    public String getSectnID() {
+        return (String) getValue("sSectnIDx");
     }
     
     /**
@@ -423,32 +422,15 @@ public class Model_Parts_Section implements GEntity {
      * @param fsValue
      * @return result as success/failed
      */
-    public JSONObject setMeasurNm(String fsValue) {
-        return setValue("sMeasurNm", fsValue);
+    public JSONObject setSectnNme(String fsValue) {
+        return setValue("sSectnNme", fsValue);
     }
 
     /**
      * @return The Value of this record.
      */
-    public String getMeasurNm() {
-        return (String) getValue("sMeasurNm");
-    }
-    
-    /**
-     * Description: Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setShortDsc(String fsValue) {
-        return setValue("sShortDsc", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getShortDsc() {
-        return (String) getValue("sShortDsc");
+    public String getSectnNme() {
+        return (String) getValue("sSectnNme");
     }
     
     /**
