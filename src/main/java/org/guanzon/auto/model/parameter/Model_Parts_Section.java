@@ -220,7 +220,7 @@ public class Model_Parts_Section implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        setSectnID(MiscUtil.getNextCode(getTable(), "sSectnNme", true, poGRider.getConnection(), poGRider.getBranchCode()));
+        setSectnID(MiscUtil.getNextCode(getTable(), "sSectnIDx", false, poGRider.getConnection(), poGRider.getBranchCode()));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -230,17 +230,17 @@ public class Model_Parts_Section implements GEntity {
     /**
      * Opens a record.
      *
-     * @param fsCondition - filter values
+     * @param fsValue - filter values
      * @return result as success/failed
      */
     @Override
-    public JSONObject openRecord(String fsCondition) {
+    public JSONObject openRecord(String fsValue) {
         poJSON = new JSONObject();
 
         String lsSQL = MiscUtil.makeSelect(this);
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " sSectnNme = " + SQLUtil.toSQL(fsCondition));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sSectnIDx = " + SQLUtil.toSQL(fsValue));
 
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
@@ -279,8 +279,9 @@ public class Model_Parts_Section implements GEntity {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setSectnID(MiscUtil.getNextCode(getTable(), "sSectnNme", true, poGRider.getConnection(), poGRider.getBranchCode()));
-
+                setSectnID(MiscUtil.getNextCode(getTable(), "sSectnIDx", false, poGRider.getConnection(), poGRider.getBranchCode()));
+                setModified(poGRider.getUserID());
+                setModifiedDte(poGRider.getServerDate());
                 lsSQL = makeSQL();
 
                 if (!lsSQL.isEmpty()) {
@@ -302,8 +303,10 @@ public class Model_Parts_Section implements GEntity {
                 JSONObject loJSON = loOldEntity.openRecord(this.getSectnID());
 
                 if ("success".equals((String) loJSON.get("result"))) {
+                    setModified(poGRider.getUserID());
+                    setModifiedDte(poGRider.getServerDate());
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sSectnNme = " + SQLUtil.toSQL(this.getSectnID()));
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sSectnIDx = " + SQLUtil.toSQL(this.getSectnID()));
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -386,14 +389,14 @@ public class Model_Parts_Section implements GEntity {
         return MiscUtil.makeSelect(this);
     }
     
-    private String getSQL(){
-        return "SELECT" + 
-                    " sSectnIDx" + //1
-                    ", IFNULL(sSectnNme,'') sSectnNme" + //2
-                    ", cRecdStat" + //3
-                    ", sModified" + //4
-                    ", dModified" + //5
-                " FROM section ";
+    public String getSQL(){
+        return    " SELECT "       
+                + "    sSectnIDx " 
+                + "  , sSectnNme " 
+                + "  , cRecdStat " 
+                + "  , sModified " 
+                + "  , dModified " 
+                + " FROM section "     ;
     }
     
     /**
@@ -414,7 +417,7 @@ public class Model_Parts_Section implements GEntity {
     }
     
     /**
-     * Description: Sets the ID of this record.
+     * Description: Sets the Value of this record.
      *
      * @param fsValue
      * @return result as success/failed
@@ -424,7 +427,7 @@ public class Model_Parts_Section implements GEntity {
     }
 
     /**
-     * @return The ID of this record.
+     * @return The Value of this record.
      */
     public String getSectnNme() {
         return (String) getValue("sSectnNme");
@@ -443,7 +446,7 @@ public class Model_Parts_Section implements GEntity {
     /**
      * @return The Value of this record.
      */
-    public String gsetRecdStat() {
+    public String getRecdStat() {
         return (String) getValue("cRecdStat");
     }
     

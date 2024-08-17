@@ -23,9 +23,9 @@ import org.json.simple.JSONObject;
  *
  * @author Arsiela
  */
-public class Model_Parts_Category implements GEntity {
+public class Model_Parts_Inventory_Type implements GEntity {
 
-    final String XML = "Model_Parts_Category.xml";
+    final String XML = "Model_Parts_Inventory_Type.xml";
 
     GRider poGRider;                //application driver
     CachedRowSet poEntity;          //rowset
@@ -37,7 +37,7 @@ public class Model_Parts_Category implements GEntity {
      *
      * @param foValue - GhostRider Application Driver
      */
-    public Model_Parts_Category(GRider foValue) {
+    public Model_Parts_Inventory_Type(GRider foValue) {
         if (foValue == null) {
             System.err.println("Application Driver is not set.");
             System.exit(1);
@@ -124,7 +124,7 @@ public class Model_Parts_Category implements GEntity {
 
     @Override
     public String getTable() {
-        return "inventory_category";
+        return "inv_type";
     }
 
     /**
@@ -220,7 +220,7 @@ public class Model_Parts_Category implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        setCategrCd(MiscUtil.getNextCode(getTable(), "sCategrCd", true, poGRider.getConnection(), poGRider.getBranchCode()));
+        setInvTypCd(MiscUtil.getNextCode(getTable(), "sInvTypCd", false, poGRider.getConnection(), ""));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -230,17 +230,17 @@ public class Model_Parts_Category implements GEntity {
     /**
      * Opens a record.
      *
-     * @param fsCondition - filter values
+     * @param fsValue - filter values
      * @return result as success/failed
      */
     @Override
-    public JSONObject openRecord(String fsCondition) {
+    public JSONObject openRecord(String fsValue) {
         poJSON = new JSONObject();
 
         String lsSQL = MiscUtil.makeSelect(this);
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " sCategrCd = " + SQLUtil.toSQL(fsCondition));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sInvTypCd = " + SQLUtil.toSQL(fsValue));
 
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
@@ -279,8 +279,9 @@ public class Model_Parts_Category implements GEntity {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setCategrCd(MiscUtil.getNextCode(getTable(), "sCategrCd", true, poGRider.getConnection(), poGRider.getBranchCode()));
-
+                setInvTypCd(MiscUtil.getNextCode(getTable(), "sInvTypCd", false, poGRider.getConnection(), ""));
+                setModified(poGRider.getUserID());
+                setModifiedDte(poGRider.getServerDate());
                 lsSQL = makeSQL();
 
                 if (!lsSQL.isEmpty()) {
@@ -296,14 +297,16 @@ public class Model_Parts_Category implements GEntity {
                     poJSON.put("message", "No record to save.");
                 }
             } else {
-                Model_Parts_Category loOldEntity = new Model_Parts_Category(poGRider);
+                Model_Parts_Inventory_Type loOldEntity = new Model_Parts_Inventory_Type(poGRider);
 
                 //replace with the primary key column info
-                JSONObject loJSON = loOldEntity.openRecord(this.getCategrCd());
+                JSONObject loJSON = loOldEntity.openRecord(this.getInvTypCd());
 
                 if ("success".equals((String) loJSON.get("result"))) {
+                    setModified(poGRider.getUserID());
+                    setModifiedDte(poGRider.getServerDate());
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sCategrCd = " + SQLUtil.toSQL(this.getCategrCd()));
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sInvTypCd = " + SQLUtil.toSQL(this.getInvTypCd()));
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -386,68 +389,15 @@ public class Model_Parts_Category implements GEntity {
         return MiscUtil.makeSelect(this);
     }
     
-    private String getSQL(){
-        return "SELECT" + 
-                    " a.sCategrCd" + //1
-                    ", IFNULL(a.sDescript,'') sDescript" + //2
-                    ", IFNULL(a.sInvTypCd,'') sInvTypCd" + //3
-                    ", a.cRecdStat" + //4
-                    ", a.sModified" + //5
-                    ", a.dModified" + //6
-                    ", IFNULL(b.sDescript,'') sTypeDesc" + //7
-                " FROM inventory_category a" +
-                " LEFT JOIN inv_type b ON b.sInvTypCd = a.sInvTypCd " ;
-    }
-    
-    /**
-     * Description: Sets the ID of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setCategrCd(String fsValue) {
-        return setValue("sCategrCd", fsValue);
-    }
-
-    /**
-     * @return The ID of this record.
-     */
-    public String getCategrCd() {
-        return (String) getValue("sCategrCd");
-    }
-    
-    /**
-     * Description: Sets the ID of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setDescript(String fsValue) {
-        return setValue("sDescript", fsValue);
-    }
-
-    /**
-     * @return The ID of this record.
-     */
-    public String getDescript() {
-        return (String) getValue("sDescript");
-    }
-    
-    /**
-     * Description: Sets the ID of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setTypeDesc(String fsValue) {
-        return setValue("sTypeDesc", fsValue);
-    }
-
-    /**
-     * @return The ID of this record.
-     */
-    public String getTypeDesc() {
-        return (String) getValue("sTypeDesc");
+    public String getSQL(){
+        return    " SELECT "       
+                + "    sInvTypCd " 
+                + "  , sDescript " 
+                + "  , sItemType " 
+                + "  , cRecdStat " 
+                + "  , sModified " 
+                + "  , dModified " 
+                + " FROM inv_type "     ;
     }
     
     /**
@@ -473,6 +423,40 @@ public class Model_Parts_Category implements GEntity {
      * @param fsValue
      * @return result as success/failed
      */
+    public JSONObject setDescript(String fsValue) {
+        return setValue("sDescript", fsValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public String getDescript() {
+        return (String) getValue("sDescript");
+    }
+    
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
+    public JSONObject setItemType(String fsValue) {
+        return setValue("sItemType", fsValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public String getItemType() {
+        return (String) getValue("sItemType");
+    }
+    
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
     public JSONObject setRecdStat(String fsValue) {
         return setValue("cRecdStat", fsValue);
     }
@@ -480,7 +464,7 @@ public class Model_Parts_Category implements GEntity {
     /**
      * @return The Value of this record.
      */
-    public String gsetRecdStat() {
+    public String getRecdStat() {
         return (String) getValue("cRecdStat");
     }
     

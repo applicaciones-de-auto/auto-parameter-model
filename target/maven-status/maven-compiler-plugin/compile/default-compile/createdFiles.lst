@@ -10,9 +10,9 @@ org\guanzon\auto\model\parameter\Model_Parts_Bin.class
 org\guanzon\auto\model\parameter\Model_Vehicle_Make_Frame_Pattern.class
 org\guanzon\auto\model\parameter\Model_Insurance_Branches.class
 org\guanzon\auto\model\parameter\Model_Parts_Warehouse.class
-org\guanzon\auto\model\parameter\Model_Parts_Item_Type.class
 org\guanzon\auto\model\parameter\Model_Vehicle_Color.class
 org\guanzon\auto\model\parameter\Model_Parts_Brand.class
+org\guanzon\auto\model\parameter\Model_Parts_Inventory_Type.class
 org\guanzon\auto\model\parameter\Model_Vehicle_Model_Engine_Pattern.class
 org\guanzon\auto\model\parameter\Model_Bank_Master.class
 org\guanzon\auto\model\parameter\Model_Parts_Category.class
