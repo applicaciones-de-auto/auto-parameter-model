@@ -15,7 +15,6 @@ org\guanzon\auto\model\parameter\Model_Parts_Brand.class
 org\guanzon\auto\model\parameter\Model_Parts_Inventory_Type.class
 org\guanzon\auto\model\parameter\Model_Vehicle_Model_Engine_Pattern.class
 org\guanzon\auto\model\parameter\Model_Bank_Master.class
-org\guanzon\auto\model\parameter\Model_Parts_Category.class
 org\guanzon\auto\model\parameter\Model_Vehicle_Model_Frame_Pattern.class
 org\guanzon\auto\model\parameter\Model_Activity_Source.class
 org\guanzon\auto\model\parameter\Model_Bank_Branches.class

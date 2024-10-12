@@ -273,7 +273,7 @@ public class Model_Insurance_Branches implements GEntity {
      */
     @Override
     public JSONObject saveRecord() {
-        String lsExclude = "sInsurNme»sTownName»sProvName»sProvIDxx";
+        String lsExclude = "sInsurNme»sTownName»sProvName»sProvIDxx»sInsurnce»xAddressx";
         poJSON = new JSONObject();
 
         if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
@@ -410,7 +410,9 @@ public class Model_Insurance_Branches implements GEntity {
                 + "  , b.sInsurNme "                                            
                 + "  , c.sTownName "                                            
                 + "  , d.sProvName "                                           
-                + "  , d.sProvIDxx "                                            
+                + "  , d.sProvIDxx "                                           
+                + "  , CONCAT(b.sInsurNme, ' ',  a.sBrInsNme) AS sInsurnce "                                                 
+                + "  , CONCAT(a.sAddressx, ' ', c.sTownName, ' ',  d.sProvName) AS xAddressx "                                           
                 + " FROM insurance_company_branches a "                         
                 + " LEFT JOIN insurance_company b ON b.sInsurIDx = a.sInsurIDx "
                 + " LEFT JOIN towncity c ON c.sTownIDxx = a.sTownIDxx "         

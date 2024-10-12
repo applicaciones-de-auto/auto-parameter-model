@@ -272,7 +272,7 @@ public class Model_Bank_Branches implements GEntity{
      */
     @Override
     public JSONObject saveRecord() {
-        String lsExclude = "sBankName»sBankType»sTownName»sProvName»sProvIDxx";
+        String lsExclude = "sBankName»sBankType»sTownName»sProvName»sProvIDxx»xAddressx";
         poJSON = new JSONObject();
 
         if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
@@ -412,7 +412,8 @@ public class Model_Bank_Branches implements GEntity{
                 + " , b.sBankType "                                  
                 + " , c.sTownName "                                    
                 + " , d.sProvName "                                   
-                + " , d.sProvIDxx "                                     
+                + " , d.sProvIDxx "                                  
+                + " , UPPER(CONCAT(a.sAddressx,' ', c.sTownName, ', ', d.sProvName)) AS xAddressx"                                    
                 + " FROM banks_branches a "                            
                 + " LEFT JOIN banks b ON b.sBankIDxx = a.sBankIDxx "   
                 + " LEFT JOIN towncity c ON c.sTownIDxx = a.sTownIDxx "
@@ -776,4 +777,21 @@ public class Model_Bank_Branches implements GEntity{
         return (String) getValue("sProvIDxx");
     }
     
+    
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fsValue
+     * @return result as success/failed
+     */
+    public JSONObject setXAddress(String fsValue) {
+        return setValue("xAddressx", fsValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public String getXAddress() {
+        return (String) getValue("xAddressx");
+    }
 }
