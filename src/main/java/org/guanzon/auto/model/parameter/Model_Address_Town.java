@@ -124,7 +124,7 @@ public class Model_Address_Town implements GEntity {
 
     @Override
     public String getTable() {
-        return "province";
+        return "towncity";
     }
 
     /**

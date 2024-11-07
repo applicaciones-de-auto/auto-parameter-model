@@ -5,6 +5,7 @@
  */
 package org.guanzon.auto.model.parameter;
 
+import com.ibm.icu.util.Calendar;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -218,9 +219,8 @@ public class Model_Address_Barangay implements GEntity {
     @Override
     public JSONObject newRecord() {
         pnEditMode = EditMode.ADDNEW;
-
         //replace with the primary key column info
-        setBrgyID(MiscUtil.getNextCode(getTable(), "sBrgyIDxx", false, poGRider.getConnection(), ""));
+        setBrgyID(MiscUtil.getNextCode(getTable(), "sBrgyIDxx", false, poGRider.getConnection(),String.valueOf(poGRider.getServerDate().toLocalDateTime().getYear()).substring(2, 4) ));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -279,7 +279,7 @@ public class Model_Address_Barangay implements GEntity {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setBrgyID(MiscUtil.getNextCode(getTable(), "sBrgyIDxx", false, poGRider.getConnection(), ""));
+                setBrgyID(MiscUtil.getNextCode(getTable(), "sBrgyIDxx", false, poGRider.getConnection(), String.valueOf(poGRider.getServerDate().toLocalDateTime().getYear()).substring(2, 4) ));
                 setModified(poGRider.getUserID());
                 setModifiedDte(poGRider.getServerDate());
                 lsSQL = MiscUtil.makeSQL(this, psExclude);

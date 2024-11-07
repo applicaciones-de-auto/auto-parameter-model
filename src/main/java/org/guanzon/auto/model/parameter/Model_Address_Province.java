@@ -6,13 +6,20 @@
 package org.guanzon.auto.model.parameter;
 
 import java.lang.reflect.Method;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sql.rowset.CachedRowSet;
+import org.apache.commons.lang3.StringUtils;
 import org.guanzon.appdriver.base.GRider;
 import org.guanzon.appdriver.base.MiscUtil;
+import static org.guanzon.appdriver.base.MiscUtil.addCondition;
+import static org.guanzon.appdriver.base.MiscUtil.close;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.RecordStatus;
@@ -220,13 +227,13 @@ public class Model_Address_Province implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        setProvID(MiscUtil.getNextCode(getTable(), "sProvIDxx", false, poGRider.getConnection(), ""));
+        setProvID(MiscUtil.getNextCode(getTable(), "LPAD(sProvIDxx, 4,'0')", false, poGRider.getConnection(), ""));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
         return poJSON;
     }
-
+    
     /**
      * Opens a record.
      *
@@ -279,7 +286,7 @@ public class Model_Address_Province implements GEntity {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setProvID(MiscUtil.getNextCode(getTable(), "sProvIDxx", false, poGRider.getConnection(), ""));
+                setProvID(MiscUtil.getNextCode(getTable(), "LPAD(sProvIDxx, 4,'0')", false, poGRider.getConnection(), ""));
                 setModified(poGRider.getUserID());
                 setModifiedDte(poGRider.getServerDate());
                 lsSQL = MiscUtil.makeSQL(this, psExclude);
