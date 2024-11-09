@@ -220,7 +220,9 @@ public class Model_Address_Barangay implements GEntity {
     public JSONObject newRecord() {
         pnEditMode = EditMode.ADDNEW;
         //replace with the primary key column info
-        setBrgyID(MiscUtil.getNextCode(getTable(), "sBrgyIDxx", false, poGRider.getConnection(),String.valueOf(poGRider.getServerDate().toLocalDateTime().getYear()).substring(2, 4) ));
+//        setBrgyID(MiscUtil.getNextCode(getTable(), "sBrgyIDxx", false, poGRider.getConnection(),String.valueOf(poGRider.getServerDate().toLocalDateTime().getYear()).substring(2, 4) ));
+
+        setBrgyID(MiscUtil.getNextCode(getTable(), "sBrgyIDxx", true, poGRider.getConnection(),"" ));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -279,7 +281,9 @@ public class Model_Address_Barangay implements GEntity {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setBrgyID(MiscUtil.getNextCode(getTable(), "sBrgyIDxx", false, poGRider.getConnection(), String.valueOf(poGRider.getServerDate().toLocalDateTime().getYear()).substring(2, 4) ));
+//                setBrgyID(MiscUtil.getNextCode(getTable(), "sBrgyIDxx", false, poGRider.getConnection(), String.valueOf(poGRider.getServerDate().toLocalDateTime().getYear()).substring(2, 4) ));
+                
+                setBrgyID(MiscUtil.getNextCode(getTable(), "sBrgyIDxx", true, poGRider.getConnection(), "" ));
                 setModified(poGRider.getUserID());
                 setModifiedDte(poGRider.getServerDate());
                 lsSQL = MiscUtil.makeSQL(this, psExclude);
