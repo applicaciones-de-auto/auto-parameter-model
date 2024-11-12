@@ -400,7 +400,7 @@ public class Model_Vehicle_Model implements GEntity {
                 + ", a.sMakeIDxx "                                          
                 + ", a.sUnitType "                                          
                 + ", a.sBodyType "                                          
-                + ", a.cVhclSize "                                          
+//                + ", a.cVhclSize "                                          
                 + ", a.sModelCde "                                          
                 + ", a.cRecdStat "                                          
                 + ", a.sEntryByx "                                          
@@ -514,22 +514,22 @@ public class Model_Vehicle_Model implements GEntity {
         return (String) getValue("sBodyType");
     }
     
-    /**
-     * Description: Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setVhclSize(String fsValue) {
-        return setValue("cVhclSize", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getVhclSize() {
-        return (String) getValue("cVhclSize");
-    }
+//    /**
+//     * Description: Sets the Value of this record.
+//     *
+//     * @param fsValue
+//     * @return result as success/failed
+//     */
+//    public JSONObject setVhclSize(String fsValue) {
+//        return setValue("cVhclSize", fsValue);
+//    }
+//
+//    /**
+//     * @return The Value of this record.
+//     */
+//    public String getVhclSize() {
+//        return (String) getValue("cVhclSize");
+//    }
     
     /**
      * Description: Sets the Value of this record.
