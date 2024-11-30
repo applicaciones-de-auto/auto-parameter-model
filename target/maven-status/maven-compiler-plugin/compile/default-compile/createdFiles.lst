@@ -1,6 +1,7 @@
 org\guanzon\auto\model\parameter\Model_Parts_Inventory_Category.class
 org\guanzon\auto\model\parameter\Model_Vehicle_Model.class
 org\guanzon\auto\model\parameter\Model_Parts_Measure.class
+org\guanzon\auto\model\parameter\Model_Default_Released_Items_Checklist.class
 org\guanzon\auto\model\parameter\Model_Parts_Bin.class
 org\guanzon\auto\model\parameter\Model_Address_Town.class
 org\guanzon\auto\model\parameter\Model_Address_Barangay.class
