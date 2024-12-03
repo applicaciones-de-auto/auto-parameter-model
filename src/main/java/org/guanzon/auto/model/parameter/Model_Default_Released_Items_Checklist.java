@@ -9,7 +9,6 @@ import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.Date;
 import javax.sql.rowset.CachedRowSet;
 import org.guanzon.appdriver.base.GRider;
 import org.guanzon.appdriver.base.MiscUtil;
@@ -23,10 +22,12 @@ import org.json.simple.JSONObject;
  *
  * @author Arsiela
  */
-public class Model_Vehicle_Model implements GEntity {
-
-    final String XML = "Model_Vehicle_Model.xml";
-
+public class Model_Default_Released_Items_Checklist implements GEntity {
+    final String XML = "Model_Default_Released_Items_Checklist.xml";
+    private final String psDefaultDate = "1900-01-01";
+    private String psTargetBranchCd;
+    private String psExclude = ""; //»
+    
     GRider poGRider;                //application driver
     CachedRowSet poEntity;          //rowset
     JSONObject poJSON;              //json container
@@ -37,7 +38,7 @@ public class Model_Vehicle_Model implements GEntity {
      *
      * @param foValue - GhostRider Application Driver
      */
-    public Model_Vehicle_Model(GRider foValue) {
+    public Model_Default_Released_Items_Checklist(GRider foValue) {
         if (foValue == null) {
             System.err.println("Application Driver is not set.");
             System.exit(1);
@@ -55,15 +56,12 @@ public class Model_Vehicle_Model implements GEntity {
             poEntity.last();
             poEntity.moveToInsertRow();
 
-            MiscUtil.initRowSet(poEntity);
+            MiscUtil.initRowSet(poEntity);        
             poEntity.updateString("cRecdStat", RecordStatus.ACTIVE);
-
+            
             poEntity.insertRow();
             poEntity.moveToCurrentRow();
-
             poEntity.absolute(1);
-
-            pnEditMode = EditMode.UNKNOWN;
         } catch (SQLException e) {
             e.printStackTrace();
             System.exit(1);
@@ -124,9 +122,9 @@ public class Model_Vehicle_Model implements GEntity {
 
     @Override
     public String getTable() {
-        return "vehicle_model";
+        return "default_released_items_checklist";
     }
-
+    
     /**
      * Gets the value of a column index number.
      *
@@ -188,7 +186,7 @@ public class Model_Vehicle_Model implements GEntity {
 
         return poJSON;
     }
-
+    
     /**
      * Sets column value.
      *
@@ -218,30 +216,26 @@ public class Model_Vehicle_Model implements GEntity {
     @Override
     public JSONObject newRecord() {
         pnEditMode = EditMode.ADDNEW;
-
+        
         //replace with the primary key column info
-        setModelID(MiscUtil.getNextCode(getTable(), "sModelIDx", false, poGRider.getConnection(), poGRider.getBranchCode()+"MD"));
-
+        setItemCode(MiscUtil.getNextCode(getTable(), "sItemCode", true, poGRider.getConnection(), poGRider.getBranchCode()));
+        
         poJSON = new JSONObject();
         poJSON.put("result", "success");
         return poJSON;
     }
-
-    /**
-     * Opens a record.
-     *
-     * @param fsCondition - filter values
-     * @return result as success/failed
-     */
+    
+    
     @Override
-    public JSONObject openRecord(String fsCondition) {
+    public JSONObject openRecord(String fsValue) {
         poJSON = new JSONObject();
 
-        String lsSQL = getSQL(); //MiscUtil.makeSelect(this);
-
+        String lsSQL = getSQL(); //MiscUtil.makeSelect(this, psExclude); //exclude the columns called thru left join
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " a.sModelIDx = " + SQLUtil.toSQL(fsCondition));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sItemCode = " + SQLUtil.toSQL(fsValue)
+                                                );
 
+        System.out.println(lsSQL);
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
         try {
@@ -265,7 +259,7 @@ public class Model_Vehicle_Model implements GEntity {
 
         return poJSON;
     }
-
+    
     /**
      * Save the entity.
      *
@@ -273,23 +267,19 @@ public class Model_Vehicle_Model implements GEntity {
      */
     @Override
     public JSONObject saveRecord() {
-        String lsExclude = "sMakeDesc";
         poJSON = new JSONObject();
 
         if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
-            String lsSQL;
+            String lsSQL; 
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setModelID(MiscUtil.getNextCode(getTable(), "sModelIDx", false, poGRider.getConnection(), poGRider.getBranchCode()+"MD"));
-                setEntryBy(poGRider.getUserID());
-                setEntryDte(poGRider.getServerDate());
-                setModified(poGRider.getUserID());
-                setModifiedDte(poGRider.getServerDate());
+                setItemCode(MiscUtil.getNextCode(getTable(), "sItemCode", true, poGRider.getConnection(), poGRider.getBranchCode()));
                 
-                lsSQL = MiscUtil.makeSQL(this, lsExclude);
-
+                lsSQL = MiscUtil.makeSQL(this, psExclude);
+                
+               // lsSQL = "Select * FROM " + getTable() + " a left join (" + makeSQL() + ") b on a.column1 = b.column "
                 if (!lsSQL.isEmpty()) {
-                    if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
+                    if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), psTargetBranchCd) > 0) {
                         poJSON.put("result", "success");
                         poJSON.put("message", "Record saved successfully.");
                     } else {
@@ -301,19 +291,17 @@ public class Model_Vehicle_Model implements GEntity {
                     poJSON.put("message", "No record to save.");
                 }
             } else {
-                Model_Vehicle_Model loOldEntity = new Model_Vehicle_Model (poGRider);
-
+                Model_Default_Released_Items_Checklist loOldEntity = new Model_Default_Released_Items_Checklist(poGRider);
+                
                 //replace with the primary key column info
-                JSONObject loJSON = loOldEntity.openRecord(this.getModelID());
-
+                JSONObject loJSON = new JSONObject();
+                loJSON = loOldEntity.openRecord(this.getItemCode());
                 if ("success".equals((String) loJSON.get("result"))) {
-                    setModified(poGRider.getUserID());
-                    setModifiedDte(poGRider.getServerDate());
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sModelIDx = " + SQLUtil.toSQL(this.getModelID()), lsExclude);
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sItemCode = " + SQLUtil.toSQL(this.getItemCode()), psExclude);
 
                     if (!lsSQL.isEmpty()) {
-                        if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
+                        if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), psTargetBranchCd) > 0) {
                             poJSON.put("result", "success");
                             poJSON.put("message", "Record saved successfully.");
                         } else {
@@ -335,6 +323,32 @@ public class Model_Vehicle_Model implements GEntity {
             return poJSON;
         }
 
+        return poJSON;
+    }
+    
+    public void setTargetBranchCd(String fsBranchCd){
+        if (!poGRider.getBranchCode().equals(fsBranchCd)){
+            psTargetBranchCd = fsBranchCd;
+        } else {
+            psTargetBranchCd = "";
+        }
+    }
+    
+    public JSONObject deleteRecord(){
+        poJSON = new JSONObject();
+        
+        String lsSQL = " DELETE FROM "+getTable()+" WHERE "
+                    + " sItemCode = " + SQLUtil.toSQL(this.getItemCode());
+        if (!lsSQL.isEmpty()) {
+            if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), psTargetBranchCd) > 0) {
+                poJSON.put("result", "success");
+                poJSON.put("message", "Record deleted successfully.");
+            } else {
+                poJSON.put("result", "error");
+                poJSON.put("continue", true);
+                poJSON.put("message", poGRider.getErrMsg());
+            }
+        }
         return poJSON;
     }
 
@@ -381,7 +395,7 @@ public class Model_Vehicle_Model implements GEntity {
      * @return SQL Statement
      */
     public String makeSQL() {
-        return MiscUtil.makeSQL(this, "");
+        return MiscUtil.makeSQL(this, psExclude);
     }
     
     /**
@@ -390,162 +404,48 @@ public class Model_Vehicle_Model implements GEntity {
      * @return SQL Select Statement
      */
     public String makeSelectSQL() {
-        return MiscUtil.makeSelect(this);
+        return MiscUtil.makeSelect(this, psExclude);
     }
     
     public String getSQL(){
-        return    "  SELECT "                                               
-                + "  a.sModelIDx "                                          
-                + ", a.sModelDsc "                                          
-                + ", a.sMakeIDxx "                                          
-                + ", a.sUnitType "                                          
-                + ", a.sBodyType "                                          
-//                + ", a.cVhclSize "                                          
-                + ", a.sModelCde "                                          
-                + ", a.cRecdStat "                                          
-                + ", a.sEntryByx "                                          
-                + ", a.dEntryDte "                                          
-                + ", a.sModified "                                          
-                + ", a.dModified "                                          
-                + ", b.sMakeDesc "	                                        
-                + "FROM vehicle_model a "                                   
-                + "LEFT JOIN vehicle_make b ON b.sMakeIDxx = a.sMakeIDxx "; 
+        return    " SELECT "                                            
+                + "    a.sItemCode "                                    
+                + "  , a.sItemDesc "                                    
+                + "  , a.cRecdStat "                                    
+                + " FROM default_released_items_checklist a " ;                          
     }
-    
     /**
      * Description: Sets the ID of this record.
      *
      * @param fsValue
-     * @return result as success/failed
+     * @return True if the record assignment is successful.
      */
-    public JSONObject setModelID(String fsValue) {
-        return setValue("sModelIDx", fsValue);
+    public JSONObject setItemCode(String fsValue) {
+        return setValue("sItemCode", fsValue);
     }
 
     /**
      * @return The ID of this record.
      */
-    public String getModelID() {
-        return (String) getValue("sModelIDx");
-    }
-    
-    /**
-     * Description: Sets the ID of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setModelDsc(String fsValue) {
-        return setValue("sModelDsc", fsValue);
-    }
-
-    /**
-     * @return The ID of this record.
-     */
-    public String getModelDsc() {
-        return (String) getValue("sModelDsc");
-    }
-    
-    /**
-     * Description: Sets the ID of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setMakeID(String fsValue) {
-        return setValue("sMakeIDxx", fsValue);
-    }
-
-    /**
-     * @return The ID of this record.
-     */
-    public String getMakeID() {
-        return (String) getValue("sMakeIDxx");
+    public String getItemCode() {
+        return (String) getValue("sItemCode");
     }
     
     /**
      * Description: Sets the Value of this record.
      *
      * @param fsValue
-     * @return result as success/failed
+     * @return True if the record assignment is successful.
      */
-    public JSONObject setMakeDesc(String fsValue) {
-        return setValue("sMakeDesc", fsValue);
+    public JSONObject setItemDesc(String fsValue) {
+        return setValue("sItemDesc", fsValue);
     }
 
     /**
      * @return The Value of this record.
      */
-    public String getMakeDesc() {
-        return (String) getValue("sMakeDesc");
-    }
-    
-    /**
-     * Description: Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setUnitType(String fsValue) {
-        return setValue("sUnitType", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getUnitType() {
-        return (String) getValue("sUnitType");
-    }
-    
-    /**
-     * Description: Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setBodyType(String fsValue) {
-        return setValue("sBodyType", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getBodyType() {
-        return (String) getValue("sBodyType");
-    }
-    
-//    /**
-//     * Description: Sets the Value of this record.
-//     *
-//     * @param fsValue
-//     * @return result as success/failed
-//     */
-//    public JSONObject setVhclSize(String fsValue) {
-//        return setValue("cVhclSize", fsValue);
-//    }
-//
-//    /**
-//     * @return The Value of this record.
-//     */
-//    public String getVhclSize() {
-//        return (String) getValue("cVhclSize");
-//    }
-    
-    /**
-     * Description: Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setModelCde(String fsValue) {
-        return setValue("sModelCde", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getModelCde() {
-        return (String) getValue("sModelCde");
+    public String getItemDesc() {
+        return (String) getValue("sItemDesc");
     }
     
     /**
@@ -564,7 +464,7 @@ public class Model_Vehicle_Model implements GEntity {
     public String getRecdStat() {
         return (String) getValue("cRecdStat");
     }
-    
+
     /**
      * Sets record as active.
      *
@@ -580,74 +480,6 @@ public class Model_Vehicle_Model implements GEntity {
      */
     public boolean isActive() {
         return ((String) getValue("cRecdStat")).equals("1");
-    }
-    
-    /**
-     * Description: Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setEntryBy(String fsValue) {
-        return setValue("sEntryByx", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getEntryBy() {
-        return (String) getValue("sEntryByx");
-    }
-    
-    /**
-     * Sets the date and time the record was modified.
-     *
-     * @param fdValue
-     * @return result as success/failed
-     */
-    public JSONObject setEntryDte(Date fdValue) {
-        return setValue("dEntryDte", fdValue);
-    }
-
-    /**
-     * @return The date and time the record was modified.
-     */
-    public Date getEntryDte() {
-        return (Date) getValue("dEntryDte");
-    }
-    
-    /**
-     * Description: Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setModified(String fsValue) {
-        return setValue("sModified", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getModified() {
-        return (String) getValue("sModified");
-    }
-    
-    /**
-     * Sets the date and time the record was modified.
-     *
-     * @param fdValue
-     * @return result as success/failed
-     */
-    public JSONObject setModifiedDte(Date fdValue) {
-        return setValue("dModified", fdValue);
-    }
-
-    /**
-     * @return The date and time the record was modified.
-     */
-    public Date getModifiedDte() {
-        return (Date) getValue("dModified");
     }
     
 }

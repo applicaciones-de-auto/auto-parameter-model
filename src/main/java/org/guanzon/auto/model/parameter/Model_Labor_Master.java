@@ -23,9 +23,8 @@ import org.json.simple.JSONObject;
  *
  * @author Arsiela
  */
-public class Model_Vehicle_Model implements GEntity {
-
-    final String XML = "Model_Vehicle_Model.xml";
+public class Model_Labor_Master implements GEntity {
+    final String XML = "Model_Labor_Master.xml";
 
     GRider poGRider;                //application driver
     CachedRowSet poEntity;          //rowset
@@ -37,7 +36,7 @@ public class Model_Vehicle_Model implements GEntity {
      *
      * @param foValue - GhostRider Application Driver
      */
-    public Model_Vehicle_Model(GRider foValue) {
+    public Model_Labor_Master(GRider foValue) {
         if (foValue == null) {
             System.err.println("Application Driver is not set.");
             System.exit(1);
@@ -57,6 +56,11 @@ public class Model_Vehicle_Model implements GEntity {
 
             MiscUtil.initRowSet(poEntity);
             poEntity.updateString("cRecdStat", RecordStatus.ACTIVE);
+            poEntity.updateDouble("nFRTxxxxx",0.00);
+            poEntity.updateDouble("nLabrPrce",0.00);
+            poEntity.updateDouble("nDiscRte1",0.00);
+            poEntity.updateDouble("nDiscRte2",0.00);
+            poEntity.updateDouble("nDiscRte3",0.00);
 
             poEntity.insertRow();
             poEntity.moveToCurrentRow();
@@ -124,7 +128,7 @@ public class Model_Vehicle_Model implements GEntity {
 
     @Override
     public String getTable() {
-        return "vehicle_model";
+        return "labor";
     }
 
     /**
@@ -220,7 +224,7 @@ public class Model_Vehicle_Model implements GEntity {
         pnEditMode = EditMode.ADDNEW;
 
         //replace with the primary key column info
-        setModelID(MiscUtil.getNextCode(getTable(), "sModelIDx", false, poGRider.getConnection(), poGRider.getBranchCode()+"MD"));
+        setLaborCde(MiscUtil.getNextCode(getTable(), "sLaborCde", false, poGRider.getConnection(), poGRider.getBranchCode()+"CL"));
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -237,10 +241,10 @@ public class Model_Vehicle_Model implements GEntity {
     public JSONObject openRecord(String fsCondition) {
         poJSON = new JSONObject();
 
-        String lsSQL = getSQL(); //MiscUtil.makeSelect(this);
+        String lsSQL = MiscUtil.makeSelect(this);
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, " a.sModelIDx = " + SQLUtil.toSQL(fsCondition));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sLaborCde = " + SQLUtil.toSQL(fsCondition));
 
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
@@ -273,20 +277,17 @@ public class Model_Vehicle_Model implements GEntity {
      */
     @Override
     public JSONObject saveRecord() {
-        String lsExclude = "sMakeDesc";
         poJSON = new JSONObject();
 
         if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
             String lsSQL;
             if (pnEditMode == EditMode.ADDNEW) {
                 //replace with the primary key column info
-                setModelID(MiscUtil.getNextCode(getTable(), "sModelIDx", false, poGRider.getConnection(), poGRider.getBranchCode()+"MD"));
+                setLaborCde(MiscUtil.getNextCode(getTable(), "sLaborCde", true, poGRider.getConnection(), poGRider.getBranchCode()));
                 setEntryBy(poGRider.getUserID());
                 setEntryDte(poGRider.getServerDate());
-                setModified(poGRider.getUserID());
-                setModifiedDte(poGRider.getServerDate());
                 
-                lsSQL = MiscUtil.makeSQL(this, lsExclude);
+                lsSQL = makeSQL();
 
                 if (!lsSQL.isEmpty()) {
                     if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -301,16 +302,14 @@ public class Model_Vehicle_Model implements GEntity {
                     poJSON.put("message", "No record to save.");
                 }
             } else {
-                Model_Vehicle_Model loOldEntity = new Model_Vehicle_Model (poGRider);
+                Model_Labor_Master loOldEntity = new Model_Labor_Master(poGRider);
 
                 //replace with the primary key column info
-                JSONObject loJSON = loOldEntity.openRecord(this.getModelID());
+                JSONObject loJSON = loOldEntity.openRecord(this.getLaborCde());
 
                 if ("success".equals((String) loJSON.get("result"))) {
-                    setModified(poGRider.getUserID());
-                    setModifiedDte(poGRider.getServerDate());
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sModelIDx = " + SQLUtil.toSQL(this.getModelID()), lsExclude);
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sLaborCde = " + SQLUtil.toSQL(this.getLaborCde()));
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -394,22 +393,20 @@ public class Model_Vehicle_Model implements GEntity {
     }
     
     public String getSQL(){
-        return    "  SELECT "                                               
-                + "  a.sModelIDx "                                          
-                + ", a.sModelDsc "                                          
-                + ", a.sMakeIDxx "                                          
-                + ", a.sUnitType "                                          
-                + ", a.sBodyType "                                          
-//                + ", a.cVhclSize "                                          
-                + ", a.sModelCde "                                          
-                + ", a.cRecdStat "                                          
-                + ", a.sEntryByx "                                          
-                + ", a.dEntryDte "                                          
-                + ", a.sModified "                                          
-                + ", a.dModified "                                          
-                + ", b.sMakeDesc "	                                        
-                + "FROM vehicle_model a "                                   
-                + "LEFT JOIN vehicle_make b ON b.sMakeIDxx = a.sMakeIDxx "; 
+        return    " SELECT "        
+                + "    sLaborCde "  
+                + "  , sLaborDsc "  
+                + "  , sWorkCtgy "  
+                + "  , nFRTxxxxx "  
+                + "  , nLabrPrce "  
+                + "  , nDiscRte1 "  
+                + "  , nDiscRte2 "  
+                + "  , nDiscRte3 "  
+                + "  , cAutoCrte "  
+                + "  , cRecdStat "  
+                + "  , sEntryByx "  
+                + "  , dEntryDte "  
+                + " FROM labor ";   
     }
     
     /**
@@ -418,15 +415,15 @@ public class Model_Vehicle_Model implements GEntity {
      * @param fsValue
      * @return result as success/failed
      */
-    public JSONObject setModelID(String fsValue) {
-        return setValue("sModelIDx", fsValue);
+    public JSONObject setLaborCde(String fsValue) {
+        return setValue("sLaborCde", fsValue);
     }
 
     /**
      * @return The ID of this record.
      */
-    public String getModelID() {
-        return (String) getValue("sModelIDx");
+    public String getLaborCde() {
+        return (String) getValue("sLaborCde");
     }
     
     /**
@@ -435,32 +432,15 @@ public class Model_Vehicle_Model implements GEntity {
      * @param fsValue
      * @return result as success/failed
      */
-    public JSONObject setModelDsc(String fsValue) {
-        return setValue("sModelDsc", fsValue);
+    public JSONObject setLaborDsc(String fsValue) {
+        return setValue("sLaborDsc", fsValue);
     }
 
     /**
      * @return The ID of this record.
      */
-    public String getModelDsc() {
-        return (String) getValue("sModelDsc");
-    }
-    
-    /**
-     * Description: Sets the ID of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setMakeID(String fsValue) {
-        return setValue("sMakeIDxx", fsValue);
-    }
-
-    /**
-     * @return The ID of this record.
-     */
-    public String getMakeID() {
-        return (String) getValue("sMakeIDxx");
+    public String getLaborDsc() {
+        return (String) getValue("sLaborDsc");
     }
     
     /**
@@ -469,15 +449,100 @@ public class Model_Vehicle_Model implements GEntity {
      * @param fsValue
      * @return result as success/failed
      */
-    public JSONObject setMakeDesc(String fsValue) {
-        return setValue("sMakeDesc", fsValue);
+    public JSONObject setWorkCtgy(String fsValue) {
+        return setValue("sWorkCtgy", fsValue);
     }
 
     /**
      * @return The Value of this record.
      */
-    public String getMakeDesc() {
-        return (String) getValue("sMakeDesc");
+    public String getWorkCtgy() {
+        return (String) getValue("sWorkCtgy");
+    }
+    
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fdbValue
+     * @return result as success/failed
+     */
+    public JSONObject setFRT(Double fdbValue) {
+        return setValue("nFRTxxxxx", fdbValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public Double getFRT() {
+        return Double.parseDouble(String.valueOf(getValue("nFRTxxxxx")));
+    }
+    
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fdbValue
+     * @return result as success/failed
+     */
+    public JSONObject setLabrPrce(Double fdbValue) {
+        return setValue("nLabrPrce", fdbValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public Double getLabrPrce() {
+        return Double.parseDouble(String.valueOf(getValue("nLabrPrce")));
+    }
+    
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fdbValue
+     * @return result as success/failed
+     */
+    public JSONObject setDiscRte1(Double fdbValue) {
+        return setValue("nDiscRte1", fdbValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public Double getDiscRte1() {
+        return Double.parseDouble(String.valueOf(getValue("nDiscRte1")));
+    }
+    
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fdbValue
+     * @return result as success/failed
+     */
+    public JSONObject setDiscRte2(Double fdbValue) {
+        return setValue("nDiscRte2", fdbValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public Double getDiscRte2() {
+        return Double.parseDouble(String.valueOf(getValue("nDiscRte2")));
+    }
+    
+    /**
+     * Description: Sets the Value of this record.
+     *
+     * @param fdbValue
+     * @return result as success/failed
+     */
+    public JSONObject setDiscRte3(Double fdbValue) {
+        return setValue("nDiscRte3", fdbValue);
+    }
+
+    /**
+     * @return The Value of this record.
+     */
+    public Double getDiscRte3() {
+        return Double.parseDouble(String.valueOf(getValue("nDiscRte3")));
     }
     
     /**
@@ -486,66 +551,15 @@ public class Model_Vehicle_Model implements GEntity {
      * @param fsValue
      * @return result as success/failed
      */
-    public JSONObject setUnitType(String fsValue) {
-        return setValue("sUnitType", fsValue);
+    public JSONObject setAutoCrte(String fsValue) {
+        return setValue("cAutoCrte", fsValue);
     }
 
     /**
      * @return The Value of this record.
      */
-    public String getUnitType() {
-        return (String) getValue("sUnitType");
-    }
-    
-    /**
-     * Description: Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setBodyType(String fsValue) {
-        return setValue("sBodyType", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getBodyType() {
-        return (String) getValue("sBodyType");
-    }
-    
-//    /**
-//     * Description: Sets the Value of this record.
-//     *
-//     * @param fsValue
-//     * @return result as success/failed
-//     */
-//    public JSONObject setVhclSize(String fsValue) {
-//        return setValue("cVhclSize", fsValue);
-//    }
-//
-//    /**
-//     * @return The Value of this record.
-//     */
-//    public String getVhclSize() {
-//        return (String) getValue("cVhclSize");
-//    }
-    
-    /**
-     * Description: Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setModelCde(String fsValue) {
-        return setValue("sModelCde", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getModelCde() {
-        return (String) getValue("sModelCde");
+    public String getAutoCrte() {
+        return (String) getValue("cAutoCrte");
     }
     
     /**
@@ -615,39 +629,4 @@ public class Model_Vehicle_Model implements GEntity {
     public Date getEntryDte() {
         return (Date) getValue("dEntryDte");
     }
-    
-    /**
-     * Description: Sets the Value of this record.
-     *
-     * @param fsValue
-     * @return result as success/failed
-     */
-    public JSONObject setModified(String fsValue) {
-        return setValue("sModified", fsValue);
-    }
-
-    /**
-     * @return The Value of this record.
-     */
-    public String getModified() {
-        return (String) getValue("sModified");
-    }
-    
-    /**
-     * Sets the date and time the record was modified.
-     *
-     * @param fdValue
-     * @return result as success/failed
-     */
-    public JSONObject setModifiedDte(Date fdValue) {
-        return setValue("dModified", fdValue);
-    }
-
-    /**
-     * @return The date and time the record was modified.
-     */
-    public Date getModifiedDte() {
-        return (Date) getValue("dModified");
-    }
-    
 }
