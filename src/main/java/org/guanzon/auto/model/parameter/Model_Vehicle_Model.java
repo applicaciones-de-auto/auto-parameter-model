@@ -26,6 +26,7 @@ import org.json.simple.JSONObject;
 public class Model_Vehicle_Model implements GEntity {
 
     final String XML = "Model_Vehicle_Model.xml";
+    String psExclude = "sMakeDesc";
 
     GRider poGRider;                //application driver
     CachedRowSet poEntity;          //rowset
@@ -273,7 +274,6 @@ public class Model_Vehicle_Model implements GEntity {
      */
     @Override
     public JSONObject saveRecord() {
-        String lsExclude = "sMakeDesc";
         poJSON = new JSONObject();
 
         if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
@@ -286,7 +286,7 @@ public class Model_Vehicle_Model implements GEntity {
                 setModified(poGRider.getUserID());
                 setModifiedDte(poGRider.getServerDate());
                 
-                lsSQL = MiscUtil.makeSQL(this, lsExclude);
+                lsSQL = MiscUtil.makeSQL(this, psExclude);
 
                 if (!lsSQL.isEmpty()) {
                     if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -310,7 +310,7 @@ public class Model_Vehicle_Model implements GEntity {
                     setModified(poGRider.getUserID());
                     setModifiedDte(poGRider.getServerDate());
                     //replace the condition based on the primary key column of the record
-                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sModelIDx = " + SQLUtil.toSQL(this.getModelID()), lsExclude);
+                    lsSQL = MiscUtil.makeSQL(this, loOldEntity, "sModelIDx = " + SQLUtil.toSQL(this.getModelID()), psExclude);
 
                     if (!lsSQL.isEmpty()) {
                         if (poGRider.executeQuery(lsSQL, getTable(), poGRider.getBranchCode(), "") > 0) {
@@ -381,7 +381,7 @@ public class Model_Vehicle_Model implements GEntity {
      * @return SQL Statement
      */
     public String makeSQL() {
-        return MiscUtil.makeSQL(this, "");
+        return MiscUtil.makeSQL(this, psExclude);
     }
     
     /**
@@ -390,7 +390,7 @@ public class Model_Vehicle_Model implements GEntity {
      * @return SQL Select Statement
      */
     public String makeSelectSQL() {
-        return MiscUtil.makeSelect(this);
+        return MiscUtil.makeSelect(this, psExclude);
     }
     
     public String getSQL(){
